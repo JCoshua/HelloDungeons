@@ -21,7 +21,12 @@ namespace HelloDungeons
             charaterName = Console.ReadLine();
             Console.WriteLine();
             Console.WriteLine();
-            Console.WriteLine("Hello " + charaterName + ".");
+            Console.WriteLine("Hello " + charaterName + ", and Welcome to Aeos.");
+            Console.WriteLine();
+            Console.WriteLine("I am to be your assistant throughout this world, I am also named Aeos.");
+            Console.WriteLine("As you can guess, I was named after this world, or was it named after me?");
+            Console.WriteLine();
+            Console.WriteLine("Apologies, " + charaterName + " it is time to begin the game.");
             Console.ReadLine();
         }
     }
