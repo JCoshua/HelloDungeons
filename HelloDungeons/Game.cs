@@ -12,6 +12,8 @@ namespace HelloDungeons
             string charaterName = "Player";
             string sideCharaterName = "Aeos";
             string className = "None";
+            string weaponName = "None";
+            int weaponDamage = 0;
             int areaNumber = 1;
             int playerHealth = 100;
             int assisantHealth = 100;
@@ -20,6 +22,19 @@ namespace HelloDungeons
             bool gameOver = false;
             float points = 0.0f;
             string input = "input";
+            bool validInput = false;
+            float damage = 0.0f;
+
+            //Game Over Check
+            if (playerHealth <= 0)
+            {
+                gameOver = true;
+            }
+
+            if (gameOver == true)
+            {
+                Console.Clear();
+            }
 
             //Start Screen and Charater Creation
             Console.WriteLine("Enter your Name below.");
@@ -107,14 +122,39 @@ namespace HelloDungeons
             {
                 Console.WriteLine();
                 Console.WriteLine("Oh, ok. I do rather like my name.");
-                if (charaterName == "Aeos")
+                sideCharaterName = "aeos";
+                if (sideCharaterName == "aeos")
+
                 {
                     Console.WriteLine("But then what should we do about our shared name? \nI'll call you just player from now on, ok!");
                     Console.Write(">");
                     input = Console.ReadLine();
-                    if (input.ToLower() == "ok" || input.ToLower() == "sure" || input.ToLower() == "yes")
+                    if (input.ToLower() == "ok" || input.ToLower() == "sure" || input.ToLower() == "yes" || input.ToLower() == "y")
                     {
                         charaterName = "Player";    
+                    }
+                    else if (input.ToLower() == "no" || input.ToLower() == "n" || input.ToLower() == "don't")
+                    {
+                        Console.WriteLine("'Well then you will have to change my name.'");
+                        while (validInput == false)
+                        {
+                            Console.Write(">");
+                            input = Console.ReadLine();
+                            if (input.ToLower() == "aeos")
+                            {
+                                Console.WriteLine("'I told you we can't have the same name, It'll get confusing");
+                                
+                            }
+                            else
+                            {
+                                sideCharaterName = input;
+                                validInput = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+
                     }
                 }
             }
@@ -127,89 +167,137 @@ namespace HelloDungeons
             }
             Console.WriteLine("'So, who exactly are you?' They ask.\n" +
                 "Well obviously your " + charaterName + ", but what are you, like what do you do?");
-            Console.WriteLine("Choose a class:\n" +
-                "1. Warrior\n" +
-                "2. Archer \n" +
-                "3. Tank");
-            Console.Write(">");
-            input = Console.ReadLine();
-            if (input == "1" || input.ToLower() == "warrior")
+            validInput = false;
+            while (validInput == false)
             {
-                Console.WriteLine("Warrior HP: 75\n" +
-                                  "Warrior Strength:40\n" +
-                                  "Warrior Weapon: Promising Sword - 10 Dmg");
-                Console.WriteLine("Do you want to proceed as a Warrior?");
+                Console.WriteLine("Choose a class:\n" +
+                    "1. Warrior\n" +
+                    "2. Archer \n" +
+                    "3. Tank");
                 Console.Write(">");
                 input = Console.ReadLine();
-                if (input == "y" || input.ToLower() == "yes")
+                if (input == "1" || input.ToLower() == "warrior")
                 {
-                    playerHealth = 75;
-                    strength = 40;
-                    Console.WriteLine("'Oh, a Warrior. Neat.'");
-                }
-                else
-                {
+                    Console.WriteLine("Warrior HP: 75\n" +
+                                      "Warrior Strength:40\n" +
+                                      "Warrior Weapon: Promising Sword - 10 Dmg");
+                    Console.WriteLine("Do you want to proceed as a Warrior?");
+                    Console.Write(">");
+                    input = Console.ReadLine();
+                    if (input == "y" || input.ToLower() == "yes")
+                    {
+                        playerHealth = 75;
+                        strength = 40;
+                        className = "Warrior";
+                        weaponName = "Promising Sword";
+                        weaponDamage = 10;
+                        Console.WriteLine("'Oh, a Warrior. Neat.'");
+                        validInput = true;
+                    }
+                    else
+                    {
 
+                    }
                 }
-            }
-            else if (input == "2" || input.ToLower() == "archer")
-            {
-                Console.WriteLine("Archer HP: 90\n" +
-                                  "Archer Strength:25\n" +
-                                  "Archer Weapon: Promising Bow - 7 Dmg");
-                Console.WriteLine("Do you want to proceed as an Archer?");
-                Console.Write(">");
-                input = Console.ReadLine();
-                if (input == "y" || input.ToLower() == "yes")
+                else if (input == "2" || input.ToLower() == "archer")
                 {
-                    playerHealth = 90;
-                    strength = 25;
-                    Console.WriteLine("'Oh, a ranger. Neat.'");
-                }
-                else
-                {
+                    Console.WriteLine("Archer HP: 90\n" +
+                                      "Archer Strength:25\n" +
+                                      "Archer Weapon: Promising Bow - 7 Dmg");
+                    Console.WriteLine("Do you want to proceed as an Archer?");
+                    Console.Write(">");
+                    input = Console.ReadLine();
+                    if (input == "y" || input.ToLower() == "yes")
+                    {
+                        playerHealth = 90;
+                        strength = 25;
+                        className = "Archer";
+                        weaponName = "Promising Bow";
+                        weaponDamage = 7;
+                        Console.WriteLine("'Oh, a ranger. Neat.'");
+                        validInput = true;
+                    }
+                    else
+                    {
 
+                    }
                 }
-            }
-            else if (input == "3" || input.ToLower() == "tank")
-            {
-                Console.WriteLine("Tank HP: 150\n" +
-                                  "Tank Strength:10\n" +
-                                  "Tank Weapon: Promising Axe - 12 Dmg");
-                Console.WriteLine("Do you want to proceed as a Tank?");
-                Console.Write(">");
-                input = Console.ReadLine();
-                if (input == "y" || input.ToLower() == "yes")
+                else if (input == "3" || input.ToLower() == "tank")
                 {
-                    playerHealth = 150;
-                    strength = 10;
-                    Console.WriteLine("'Oh, a Tank. Neat.'");
-                }
-                else
-                {
+                    Console.WriteLine("Tank HP: 150\n" +
+                                      "Tank Strength:10\n" +
+                                      "Tank Weapon: Promising Axe - 12 Dmg");
+                    Console.WriteLine("Do you want to proceed as a Tank?");
+                    Console.Write(">");
+                    input = Console.ReadLine();
+                    if (input == "y" || input.ToLower() == "yes")
+                    {
+                        playerHealth = 150;
+                        strength = 10;
+                        className = "Tank";
+                        weaponName = "Promising Axe";
+                        weaponDamage = 12;
+                        Console.WriteLine("'Oh, a Tank. Neat.'");
+                        validInput = true;
+                    }
+                    else
+                    {
 
+                    }
                 }
+                else if (input.ToLower() == "no")
+                {
+                    Console.WriteLine("Oh a rebel huh, thats fine.");
+                    Console.WriteLine("Class changed to Rebel.");
+                    Console.WriteLine("Rebel HP: 1\n" +
+                                  "Rebel Strength:1\n" +
+                                  "Tank Weapon: Rebel's Audacity - 100 Dmg");
+                    playerHealth = 1;
+                    strength = 1;
+                    className = "Rebel";
+                    weaponName = "Rebel's Audacity";
+                    weaponDamage = 100;
+                    validInput = true;
+                }
+                else Console.WriteLine("invalid input");
             }
+            Console.WriteLine(className);
                 Console.ReadKey();
             Console.Clear();
-            Console.WriteLine("The two of you enter a strange room. It's dark and difficult to see, but a dim light cracks through the door on the other side. \n" +
-                "Walk towards the door?");
-            Console.Write(">");
-            input = Console.ReadLine();
-            if (input.ToLower() == "yes" || input.ToLower() == "y")
+            validInput = false;
+            while (validInput == false)
             {
-                Console.WriteLine("\n You walk forward, despite your lack of vision. \n" +
-                    "This proves to be a problem as you lose your footing only a few steps in and fall deep into a large pit.");
-                playerHealth -= 75;
-                Console.WriteLine("You took 75 Damage. \n" +
-                    "You have " + playerHealth + " HP remaining.");
-                Console.WriteLine("'Hey, are you okay?' " + sideCharaterName + " calls to you.\n");
-                Console.ReadKey();
-                Console.WriteLine("Suddenly, the dim room lights up, revealing a maze-like bridge.\n");
-                Console.WriteLine("'I found the lights! They were next to the door!' " + sideCharaterName + " shouts.");
-                
+                Console.Clear();
+                Console.WriteLine("HP:" + playerHealth + "\n");
+                Console.WriteLine("The two of you enter a strange room. It's dark and difficult to see, but a dim light cracks through the door on the other side. \n" +
+                    "Walk towards the door?");
+                Console.Write(">");
+                input = Console.ReadLine();
+                if (input.ToLower() == "yes" || input.ToLower() == "y")
+                {
+                    validInput = true;
+                    Console.WriteLine("\n You walk forward, despite your lack of vision. \n" +
+                        "This proves to be a problem as you lose your footing only a few steps in and fall deep into a large pit.");
+                    playerHealth -= 75;
+                    Console.WriteLine("You took 75 Damage. \n" +
+                        "You have " + playerHealth + " HP remaining.");
+                    Console.WriteLine("'Hey, are you okay?' " + sideCharaterName + " calls to you.\n");
+                    Console.ReadKey();
+                    Console.WriteLine("Suddenly, the dim room lights up, revealing a maze-like bridge.\n");
+                    Console.WriteLine("'I found the lights! They were next to the door!' " + sideCharaterName + " shouts.");
+
+                }
+                else if (input.ToLower() == "no" || input.ToLower() == "n")
+                {
+                    validInput = true;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input.");
+                    Console.ReadKey();
+                    Console.Clear();
+                }
             }
-            
         }
     }
 }
