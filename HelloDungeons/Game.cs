@@ -19,6 +19,7 @@ namespace HelloDungeons
             int assisantHealth = 100;
             int assisantStrength = 3;
             int strength = 5;
+            int attempts = 5;
             bool gameOver = false;
             float points = 0.0f;
             string input = "input";
@@ -122,8 +123,8 @@ namespace HelloDungeons
             {
                 Console.WriteLine();
                 Console.WriteLine("Oh, ok. I do rather like my name.");
-                sideCharaterName = "aeos";
-                if (sideCharaterName == "aeos")
+                sideCharaterName = "Aeos";
+                if (charaterName.ToLower() == "aeos")
 
                 {
                     Console.WriteLine("But then what should we do about our shared name? \nI'll call you just player from now on, ok!");
@@ -281,11 +282,31 @@ namespace HelloDungeons
                     playerHealth -= 75;
                     Console.WriteLine("You took 75 Damage. \n" +
                         "You have " + playerHealth + " HP remaining.");
+                    if (playerHealth <= 0)
+                    {
+                        gameOver = true;
+                    }
+                    else { }
+                    if (gameOver)
+                    {
+                        Console.WriteLine("You died. What a loser.");
+                        break;
+                    }
                     Console.WriteLine("'Hey, are you okay?' " + sideCharaterName + " calls to you.\n");
                     Console.ReadKey();
                     Console.WriteLine("Suddenly, the dim room lights up, revealing a maze-like bridge.\n");
                     Console.WriteLine("'I found the lights! They were next to the door!' " + sideCharaterName + " shouts.");
-
+                    Console.WriteLine("'There might be a way up further on in the maze! \n" +
+                        "I'll cross up top and meet you on the other side.'\n");
+                    Console.ReadKey();
+                    Console.WriteLine("You look ahead at the towering wall ahead, you can either go left or right.\n" +
+                        "Which way will you go?");
+                    input = Console.ReadLine();
+                    if (input.ToLower() == "left" || input.ToLower() == "l")
+                    {
+                        Console.WriteLine("You head left, and quickly hit a turn right.\n" +
+                            "go back or right?");
+                    }
                 }
                 else if (input.ToLower() == "no" || input.ToLower() == "n")
                 {
@@ -296,6 +317,20 @@ namespace HelloDungeons
                     Console.WriteLine("Invalid input.");
                     Console.ReadKey();
                     Console.Clear();
+                }
+                Console.Clear();
+                Console.WriteLine("You enter a small room with a tightly sealed door infront of you.\n\n" +
+                    sideCharaterName + " perks up, exclaming 'Oh, I know this puzzle, I think.\n" +
+                    "Anyways you have to guess the correct order of the switches to open the doors ahead!'\n" +
+                    sideCharaterName + " is right, as you see five levers to your right all in random order.\n" +
+                    "Be careful, you only get 5 tries");
+                Console.Clear();
+                for (int i=0; i<=attempts; i++)
+                {
+                    int attemptsRemain = attempts - i;
+                    Console.WriteLine("Careful, you only have " + attemptsRemain + " attempts remaining");
+
+
                 }
             }
         }
