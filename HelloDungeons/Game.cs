@@ -360,6 +360,25 @@ namespace HelloDungeons
     //Enter Maze
     //Maze Path = Left, Right, Forward
     int mazeLoction = 0;
+    void MazeLocater()
+        {
+        while (mazeLoction != -1)
+            {
+            if (mazeLoction == 0)
+                {
+                    input = GetInput("You look ahead at the towering wall ahead, you can either go left or right.\n" +
+                    "Which way will you go?", "Left", "Right");
+                    if (input == 1)
+                    {
+                        mazeLoction = 1;
+                    }
+                    if (input == 2)
+                    {
+    
+                    }
+                }
+            }
+        }   
     input = GetInput("You look ahead at the towering wall ahead, you can either go left or right.\n" +
     "Which way will you go?", "Left", "Right");
     if (input == 1)
