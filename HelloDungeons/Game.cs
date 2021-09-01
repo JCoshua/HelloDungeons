@@ -36,14 +36,13 @@ namespace HelloDungeons
         /// <returns>Option Chosen</returns>
         int GetInput(string description, string option1, string option2)
         {
+            //reset if resued
             stringInput = "";
             input = 0;
+
             while (!(stringInput == "1" || stringInput == "2"))
             {
-                //Option Menu
-                Console.WriteLine(description + "\n" +
-                "1." + option1 + "\n" +
-                "2." + option2 + "\n");
+                Console.WriteLine(description + "\n" + "1." + option1 + "\n" + "2." + option2 + "\n");
                 Console.Write(">");
                 stringInput = Console.ReadLine();
 
@@ -56,6 +55,12 @@ namespace HelloDungeons
                 {
                     return 2;
                 }
+
+                else
+                {
+                    Console.WriteLine("Invalid Input");
+                    Console.ReadKey(true);
+                }
             }
         return 0;
         }
@@ -63,242 +68,163 @@ namespace HelloDungeons
         //Three Option Selection
         int GetInputThreeOptions(string description, string option1, string option2, string option3)
         {
-        stringInput = "";
-        input = 0;
-        while (!(stringInput == "1" || stringInput == "2" || stringInput == "3"))
-        {   
-        Console.WriteLine(description + "\n" +
-        "1." + option1 + "\n" +
-        "2." + option2 + "\n" +
-        "3." + option3 + "\n");
-        Console.Write(">");
-        stringInput = Console.ReadLine();
-        if (stringInput == "1" || stringInput == option1)
-        {
-        return 1;
-        }
-        else if (stringInput == "2" || stringInput == option2)
-        {
-        return 2;
-        }
-        else if (stringInput == "3" || stringInput == option3)
-        {
-        return 3;
-        }
-        }
-        return 0;
+            //Reset if reused
+            stringInput = "";
+            input = 0;
+
+            while (!(stringInput == "1" || stringInput == "2" || stringInput == "3"))
+            {   
+                Console.WriteLine(description + "\n" + "1." + option1 + "\n" + "2." + option2 + "\n" + "3." + option3 + "\n");
+                Console.Write(">");
+                stringInput = Console.ReadLine();
+
+                if (stringInput == "1" || stringInput == option1)
+                {
+                    return 1;
+                }
+
+                else if (stringInput == "2" || stringInput == option2)
+                {
+                    return 2;
+                }
+
+                else if (stringInput == "3" || stringInput == option3)
+                {
+                    return 3;
+                }
+
+                else
+                {
+                    Console.WriteLine("Invalid Input");
+                    Console.ReadKey(true);
+                }
+            }
+            return 0;
         }
 
         void MazeLocation()
         {
 
         }
+
         void StartScreen()
         {
-        //Start Screen and Charater Creation
-        Console.WriteLine("Enter your Name below.");
-        Console.Write(">");
-        charaterName = Console.ReadLine();
-        Console.WriteLine("\n");
+            //Start Screen and Charater Creation
+            Console.WriteLine("Enter your Name below.");
+            Console.Write(">");
+            charaterName = Console.ReadLine();
+            Console.WriteLine("\n");
 
-        //Name Check Choices
+            //Name Check Choices
 
-        //Player chose Aeos as Name
-        if (charaterName.ToLower() == "aeos")
-        {
-        Console.WriteLine("'Wow, small world, huh. My name is also Aeos, as is this Dungeon's name.\n'");
-        }
+            //Player chose Aeos as Name
+            if (charaterName.ToLower() == "aeos")
+            {
+                Console.WriteLine("'Wow, small world, huh. My name is also Aeos, as is this Dungeon's name.\n'");
+            }
 
-        //Player chose Player or Name as their name
-        else if (charaterName.ToLower() == "player" || charaterName.ToLower() == "name")
-        {
-        Console.WriteLine("'Oh, ok then. I guess not everyone is okay giving their names to strangers.\n'");
-        Console.WriteLine("'I am to be your assistant throughout the Aeos Dungeon, I am also named Aeos.'");
-        }
+            //Player just types a
+            else if (charaterName.ToLower() == "a")
+            {
+                Console.WriteLine("'Um... hello " + charaterName + ". Has anyone told you that was a weird name.\n'");
+                Console.WriteLine("'Anyways, I am to be your assistant throughout the Aeos Dungeon, I am also named Aeos.'");
+            }
 
-        //Player just types a
-        else if (charaterName.ToLower() == "a")
-        {
-        Console.WriteLine("'Um... hello " + charaterName + ". Has anyone told you that was a weird name.\n'");
-        Console.WriteLine("'Anyways, I am to be your assistant throughout the Aeos Dungeon, I am also named Aeos.'");
-        }
+            //Player chooses any other name
+            else
+            {
+                Console.WriteLine("Hello " + charaterName + ", and Welcome to the Aeos Dungeon.\n");
+                Console.WriteLine("I am to be your assistant throughout this Dungeon, I am also named Aeos.");
+            }
 
-        //Player types nothing
-        else if (charaterName.ToLower() == "")
-        {
-        Console.WriteLine("'Uh... do you have a name?'");
-        Console.ReadKey();
-        Console.WriteLine("'I need to call you something...'");
-        Console.WriteLine("'Would just 'player' suffice?'");
-        Console.WriteLine("Yes or No");
-        Console.Write(">");
-        stringInput = Console.ReadLine();
-        if (stringInput.ToLower() == "yes" || stringInput.ToLower() == "y")
-        {
-        charaterName = "player";
-        }
-        else
-        {
-        Console.WriteLine("'Then what should you be called?'");
-        Console.Write(">");
-        charaterName = Console.ReadLine();
-        Console.WriteLine("Hello " + charaterName + ", and Welcome to the Aeos Dungeon.\n");
-        Console.WriteLine("I am to be your assistant throughout this Dungeon, I am also named Aeos.");
-        }
-        }
-        //If the player chooses 'your name'.
-        else if (charaterName.ToLower() == "your name")
-        {
-        Console.WriteLine("'Oh, its one of you... You know what '" + charaterName + "' I won't let you get your way, so have fun with your name from now on.\n");
-        Console.WriteLine("'Anyways, I am to be your assistant throughout the Aeos Dungeon, I am also named Aeos.'");
-        }
+            Console.WriteLine("As you can guess, I was named after this Dungeon, or was it named after me?\n");
+            Console.ReadKey(true);
 
-        //Player chooses any other name
-        else
-        {
-        Console.WriteLine("Hello " + charaterName + ", and Welcome to the Aeos Dungeon.\n");
-        Console.WriteLine("I am to be your assistant throughout this Dungeon, I am also named Aeos.");
-        }
-        Console.WriteLine("As you can guess, I was named after this Dungeon, or was it named after me?\n");
-        Console.ReadKey();
-        Console.WriteLine("Oh, but if you wish to refer to me as something else, you can.\n");
-        Console.Write(">");
-        sideCharaterName = Console.ReadLine();
+            //If player's Name is Aeos
+            if (charaterName.ToLower() == "aeos")
+            {
+                Console.WriteLine("But then what should we do about our shared name? \nI'll call you just player from now on, ok!");
+                Console.Write(">");
+                stringInput = Console.ReadLine();
 
-        //Name the Assisstant
+                if (stringInput.ToLower() == "yes" || stringInput.ToLower() == "y")
+                {
+                    charaterName = "Player";
+                }
 
-        //Keep assisstant name
-        if (sideCharaterName.ToLower() == "aeos" || sideCharaterName.ToLower() == "")
-        {
-        Console.WriteLine();
-        Console.WriteLine("Oh, ok. I do rather like my name.");
-        sideCharaterName = "Aeos";
-        if (charaterName.ToLower() == "aeos")
+                else if (stringInput.ToLower() == "no" || stringInput.ToLower() == "n")
+                {
+                    while (validInput == false)
+                    {
+                        Console.WriteLine("'Well then you will have to change my name.'");
+                        Console.Write(">");
+                        stringInput = Console.ReadLine();
+                        if (stringInput.ToLower() == "aeos")
+                        {
+                            Console.WriteLine("'I told you we can't have the same name, It'll get confusing");
+                        }
+                        
+                        else
+                        {
+                            sideCharaterName = stringInput;
+                            validInput = true;
+                        }
+                    }
+                }
+            }
+            
+            Console.ReadKey();
+            while (validInput == false)
+            {
+            //Choose Class
+            Console.Clear();
+            input = GetInputThreeOptions("'So, who exactly are you?' They ask.\n" +
+            "Well obviously your " + charaterName + ", but what are you, like what do you do?",
+            "Warrior", "Archer", "Tank");
 
-        {
-        Console.WriteLine("But then what should we do about our shared name? \nI'll call you just player from now on, ok!");
-        Console.Write(">");
-        stringInput = Console.ReadLine();
-        if (stringInput.ToLower() == "ok" || stringInput.ToLower() == "sure" ||
-        stringInput.ToLower() == "yes" || stringInput.ToLower() == "y")
-        {
-        charaterName = "Player";
-        }
-        else if (stringInput.ToLower() == "no" || stringInput.ToLower() == "n" || stringInput.ToLower() == "don't")
-        {
-        Console.WriteLine("'Well then you will have to change my name.'");
-        while (validInput == false)
-        {
-        Console.Write(">");
-        stringInput = Console.ReadLine();
-        if (stringInput.ToLower() == "aeos")
-        {
-        Console.WriteLine("'I told you we can't have the same name, It'll get confusing");
+                //Choose Warrior
+                if (input == 1 )
+                {
+                    Console.WriteLine("Warrior HP: 75\n" +
+                    "Warrior Strength:40\n" +
+                    "Warrior Weapon: Promising Sword - 10 Dmg");
+            
+                    playerHealth = 75;
+                    strength = 40;
+                    className = "Warrior";
+                    weaponName = "Promising Sword";
+                    weaponDamage = 10;
+                }
 
-        }
-        else
-        {
-        sideCharaterName = stringInput;
-        validInput = true;
-        }
-        }
-        }
-        else
-        {
+                //Choose Archer
+                else if (input == 2)
+                {
+                    Console.WriteLine("Archer HP: 90\n" +
+                    "Archer Strength:25\n" +
+                    "Archer Weapon: Promising Bow - 7 Dmg");
 
-        }
-        }
-        }
-        //Changed assistant name
-        else
-        {
-        Console.WriteLine();
-        Console.WriteLine("'" + sideCharaterName + "? I suppose it would take some time to get used to that name...\n" +
-        "Apologies, " + charaterName + ", it is time to begin your adventure.'");
-        Console.ReadKey();
-        }
-        Console.ReadKey();
-        while (validInput == false)
-        {
-        //Choose Class
-        Console.Clear();
-        input = GetInputThreeOptions("'So, who exactly are you?' They ask.\n" +
-        "Well obviously your " + charaterName + ", but what are you, like what do you do?",
-        "1. Warrior", "2. Archer", "3. Tank");
+                    playerHealth = 90;
+                    strength = 25;
+                    className = "Archer";
+                    weaponName = "Promising Bow";
+                    weaponDamage = 7;
+                }
 
-        //Choose Warrior
-        if (input == 1 )
-        {
-        Console.WriteLine("Warrior HP: 75\n" +
-        "Warrior Strength:40\n" +
-        "Warrior Weapon: Promising Sword - 10 Dmg");
-        Console.WriteLine("Do you want to proceed as a Warrior?");
-        Console.Write(">");
-        stringInput = Console.ReadLine();
-        if (stringInput == "y" || stringInput.ToLower() == "yes")
-        {
-        playerHealth = 75;
-        strength = 40;
-        className = "Warrior";
-        weaponName = "Promising Sword";
-        weaponDamage = 10;
-        Console.WriteLine("'Oh, a Warrior. Neat.'");
-        validInput = true;
-
+                //Choose Tank
+                else if (input == 3)
+                {
+                    Console.WriteLine("Tank HP: 150\n" +
+                    "Tank Strength:10\n" +
+                    "Tank Weapon: Promising Axe - 12 Dmg");
+            
+                    playerHealth = 150;
+                    strength = 10;
+                    className = "Tank";
+                    weaponName = "Promising Axe";
+                    weaponDamage = 12;
+                }
+            }
         }
-        else
-        {
-
-        }
-        }
-        //Choose Archer
-        else if (input == 2)
-        {
-        Console.WriteLine("Archer HP: 90\n" +
-        "Archer Strength:25\n" +
-        "Archer Weapon: Promising Bow - 7 Dmg");
-        Console.WriteLine("Do you want to proceed as an Archer?");
-        Console.Write(">");
-        stringInput = Console.ReadLine();
-        if (stringInput == "y" || stringInput.ToLower() == "yes")
-        {
-        playerHealth = 90;
-        strength = 25;
-        className = "Archer";
-        weaponName = "Promising Bow";
-        weaponDamage = 7;
-        Console.WriteLine("'Oh, a ranger. Neat.'");
-        validInput = true;
-        }
-        else
-        {
-
-        }
-        }
-        //Choose Tank
-        else if (input == 3)
-        {
-        Console.WriteLine("Tank HP: 150\n" +
-        "Tank Strength:10\n" +
-        "Tank Weapon: Promising Axe - 12 Dmg");
-        Console.WriteLine("Do you want to proceed as a Tank?");
-        Console.Write(">");
-        stringInput = Console.ReadLine();
-        if (stringInput == "y" || stringInput.ToLower() == "yes")
-        {
-        playerHealth = 150;
-        strength = 10;
-        className = "Tank";
-        weaponName = "Promising Axe";
-        weaponDamage = 12;
-        Console.WriteLine("'Oh, a Tank. Neat.'");
-        validInput = true;
-        }
-        }
-        else Console.WriteLine("invalid input");
-        }
-        }
-
 
     //Room 1
         void Room1()
