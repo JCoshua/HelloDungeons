@@ -4,432 +4,331 @@ using System.Text;
 
 namespace HelloDungeons
 {
+    public enum Scene
+    {
+        STARTMENU,
+        CHARACTERSELECTION,
+        BATTLE,
+        RESTARTMENU
+    }
+
+    public enum ItemType
+    {
+        SWORD,
+        BOW,
+        WAND,
+        SHIELD,
+        HELMET,
+        ARMOR,
+        GLOVES,
+        BOOTS,
+        POTION,
+        CONSUMABLES
+    }
+
+    public struct Item
+    {
+        public string Name;
+        public float StatBoost;
+        public ItemType Type;
+        public int Cost;
+    }
+
     class Game
     {
-        //Defining and Initionaliziation
-        string charaterName = "Player";
-        string sideCharaterName = "Aeos";
-        string className = "None";
-        string weaponName = "None";
-        int currentArea = 0;
-        int weaponDamage = 0;
-        int charLevel = 1;
-        int playerHealth = 100;
-        int assisantHealth = 100;
-        int assisantStrength = 3;
-        int strength = 5;
-        int attempts = 5;
-        float exp = 0.0f;
-        string stringInput = "input";
-        bool validInput = false;
-        bool gameOver = false;
-        float damage = 0.0f;
-        int input = 0;
+        private bool _gameOver;
+        private Scene _currentScene = 0;
+        private Player _player;
+        private Shop _shop;
+        private Entity[] _enemies;
+        private string _playerName;
 
+        private int _currentEnemyIndex = 0;
+        private Entity _currentEnemy;
+
+        private Item[] _knightItems;
+        private Item[] _archerItems;
+        private Item[] _wizardItems;
+        private Item[] _tankItems;
+
+        private Item _sword;
+        private Item _shield;
+        private Item _arrow;
+        private Item _jewel;
+
+        public Item[] _shopInventory;
 
         /// <summary>
-        /// Two Options Choices
+        /// Gets the Input of the player
         /// </summary>
-        /// <param name="description">Event</param>
-        /// <param name="option1">First Option</param>
-        /// <param name="option2">Second Option</param>
-        /// <returns>Option Chosen</returns>
-        int GetInput(string description, string option1, string option2)
+        /// <param name="description">The context for the decision being made</param>
+        /// <param name="options">The choices</param>
+        /// <returns>The selected choice</returns>
+        int GetInput(string description, params string[] options)
         {
-            //reset if resued
-            stringInput = "";
-            input = 0;
+            string input = "";
+            int inputReceived = -1;
 
-            while (!(stringInput == "1" || stringInput == "2"))
+            while (inputReceived == -1)
             {
-                Console.WriteLine(description + "\n" + "1." + option1 + "\n" + "2." + option2 + "\n");
-                Console.Write(">");
-                stringInput = Console.ReadLine();
-
-                if (stringInput == "1" || stringInput.ToLower() == option1)
+                //Print options
+                Console.WriteLine(description);
+                for (int i = 0; i < options.Length; i++)
                 {
-                    return 1;
+                    Console.WriteLine((i + 1) + ". " + options[i]);
                 }
+                Console.Write("> ");
 
-                else if (stringInput == "2" || stringInput.ToLower() == option2)
+                //Get input from player
+                input = Console.ReadLine();
+
+                //If the player typed an int...
+                if (int.TryParse(input, out inputReceived))
                 {
-                    return 2;
+                    //...decrement the input and check if it's within the bounds of the array
+                    inputReceived--;
+                    if (inputReceived < 0 || inputReceived >= options.Length)
+                    {
+                        //Set input received to be the default value
+                        inputReceived = -1;
+                        //Display error message
+                        Console.WriteLine("Invalid Input. Not an Option");
+                        Console.ReadKey(true);
+                    }
                 }
-
+                //If the player didn't type an int
                 else
                 {
-                    Console.WriteLine("Invalid Input");
+                    //Set input received to be the default value
+                    inputReceived = -1;
+                    //Display error message
+                    Console.WriteLine("Invalid Input. Not a Number");
                     Console.ReadKey(true);
                 }
             }
-        return 0;
+            return inputReceived;
         }
 
-        //Three Option Selection
-        int GetInputThreeOptions(string description, string option1, string option2, string option3)
+        /// <summary>
+        /// Intializes the game at the start of the game
+        /// </summary>
+        private void Start()
         {
-            //Reset if reused
-            stringInput = "";
-            input = 0;
+            _gameOver = false;
 
-            while (!(stringInput == "1" || stringInput == "2" || stringInput == "3"))
-            {   
-                Console.WriteLine(description + "\n" + "1." + option1 + "\n" + "2." + option2 + "\n" + "3." + option3 + "\n");
-                Console.Write(">");
-                stringInput = Console.ReadLine();
+        }
 
-                if (stringInput == "1" || stringInput == option1)
+        public void IntitalizeItems()
+        {
+            //Knight Base Items
+            Item _basicSword = new Item { Name = "Promising Sword", StatBoost = 10, Type = ItemType.SWORD };
+            Item _basicShield = new Item { Name = "Wooden Shield", StatBoost = 10, Type = ItemType.SHIELD };
+            Item _knightArmor = new Item { Name = "Knight's Armor", StatBoost = 5, Type = ItemType.ARMOR }; 
+
+            //Archer Base Items
+            Item _basicBow = new Item { Name = "Promising Bow", StatBoost = 14, Type = ItemType.BOW };
+            Item _hunterTunic = new Item { Name = "Hunter's Tunic", StatBoost = 5, Type = ItemType.ARMOR };
+            Item _arrow = new Item { Name = "Arrow", StatBoost = 1, Type = ItemType.CONSUMABLES };
+            
+            //Wizard Base Items
+            Item _stick = new Item { Name = "Wooden Stick", StatBoost = 5, Type = ItemType.WAND };
+            Item _basicRobes = new Item { Name = "Wizard's Robe", StatBoost = 5, Type = ItemType.ARMOR };
+
+            //Tank Base Items
+            Item _reinforcedShield = new Item { Name = "Reinforced Shield", StatBoost = 15, Type = ItemType.SHIELD };
+            Item _ironChestplate = new Item { Name = "Iron Chestplate", StatBoost = 20, Type = ItemType.ARMOR };
+
+            //Initalize arrays
+            _knightItems = new Item[] { _basicSword, _basicShield, _knightArmor };
+            _archerItems = new Item[] { _basicBow, _hunterTunic };
+            _wizardItems = new Item[] { _stick, _basicRobes };
+            _tankItems = new Item[] { _basicSword, _reinforcedShield, _ironChestplate };
+        }
+
+        /// <summary>
+        /// This function is called every time the game loops.
+        /// </summary>
+        public void Update()
+        {
+            DisplayCurrentScene();
+            Console.Clear();
+        }
+
+        /// <summary>
+        /// This function is called before the applications closes
+        /// </summary>
+        public void End()
+        {
+            Console.WriteLine("Farewell... Coward.");
+        }
+
+        /// <summary>
+        /// Calls the appropriate function(s) based on the current scene index
+        /// </summary>
+        void DisplayCurrentScene()
+        {
+            switch (_currentScene)
+            {
+                case Scene.STARTMENU:
+                    StartingScreen();
+                    break;
+
+                case Scene.CHARACTERSELECTION:
+                    BeginningScene();
+                    break;
+
+                case Scene.BATTLE:
+                    Console.ReadKey(true);
+                    Console.Clear();
+                    break;
+
+                case Scene.RESTARTMENU:
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid Scene Index");
+                    break;
+            }
+        }
+        public void StartingScreen()
+        {
+            int choice = GetInput("Welcome to Aeos Dungeon", "Start New Game", "Load Game");
+
+            if (choice == 0)
+            {
+                _currentScene = Scene.CHARACTERSELECTION;
+            }
+            else if (choice == 1)
+            {
+                if (_gameOver)
                 {
-                    return 1;
+                    Console.WriteLine("Loading Successful");
+                    Console.ReadKey(true);
+                    Console.Clear();
+                    _currentScene = Scene.BATTLE;
                 }
-
-                else if (stringInput == "2" || stringInput == option2)
-                {
-                    return 2;
-                }
-
-                else if (stringInput == "3" || stringInput == option3)
-                {
-                    return 3;
-                }
-
                 else
                 {
-                    Console.WriteLine("Invalid Input");
+                    Console.WriteLine("Woops, something messed up");
                     Console.ReadKey(true);
+                    Console.Clear();
                 }
             }
-            return 0;
         }
 
-        void MazeLocation()
-        {
-
-        }
-
-        void StartScreen()
+        void BeginningScene()
         {
             //Start Screen and Charater Creation
-            Console.WriteLine("Enter your Name below.");
-            Console.Write(">");
-            charaterName = Console.ReadLine();
-            Console.WriteLine("\n");
-
             //Name Check Choices
+            GetPlayerName();
 
+            //Choose Class
+            CharacterSelection();
+        }
+
+        /// <summary>
+        /// Displays text asking for the players name. Doesn't transition to the next section
+        /// until the player decides to keep the name.
+        /// </summary>
+        void GetPlayerName()
+        {
+            bool validName = false;
+            //Loops while player has not confirmed their name
+            while (validName == false)
+            {
+                //Ask player their name
+                Console.WriteLine("Hello. Please enter your Name.");
+                _playerName = Console.ReadLine();
+
+                //Ask player if the are okay with their name
+                int input = GetInput("Are you okay with this name?", "Yes", "No");
+                //IF yes
+                if (input == 0)
+                {
+                    //End Loop
+                    validName = true;
+                }
+                //If no
+                else if (input == 1)
+                {
+                    //Continue Looping
+                }
+            }
             //Player chose Aeos as Name
-            if (charaterName.ToLower() == "aeos")
+            if (_playerName.ToLower() == "aeos")
             {
                 Console.WriteLine("'Wow, small world, huh. My name is also Aeos, as is this Dungeon's name.\n'");
-            }
-
-            //Player just types a
-            else if (charaterName.ToLower() == "a")
-            {
-                Console.WriteLine("'Um... hello " + charaterName + ". Has anyone told you that was a weird name.\n'");
-                Console.WriteLine("'Anyways, I am to be your assistant throughout the Aeos Dungeon, I am also named Aeos.'");
             }
 
             //Player chooses any other name
             else
             {
-                Console.WriteLine("Hello " + charaterName + ", and Welcome to the Aeos Dungeon.\n");
+                Console.WriteLine("Hello " + _playerName + ", and Welcome to the Aeos Dungeon.\n");
                 Console.WriteLine("I am to be your assistant throughout this Dungeon, I am also named Aeos.");
             }
 
             Console.WriteLine("As you can guess, I was named after this Dungeon, or was it named after me?\n");
             Console.ReadKey(true);
+        }
 
-            //If player's Name is Aeos
-            if (charaterName.ToLower() == "aeos")
-            {
-                Console.WriteLine("But then what should we do about our shared name? \nI'll call you just player from now on, ok!");
-                Console.Write(">");
-                stringInput = Console.ReadLine();
-
-                if (stringInput.ToLower() == "yes" || stringInput.ToLower() == "y")
-                {
-                    charaterName = "Player";
-                }
-
-                else if (stringInput.ToLower() == "no" || stringInput.ToLower() == "n")
-                {
-                    while (validInput == false)
-                    {
-                        Console.WriteLine("'Well then you will have to change my name.'");
-                        Console.Write(">");
-                        stringInput = Console.ReadLine();
-                        if (stringInput.ToLower() == "aeos")
-                        {
-                            Console.WriteLine("'I told you we can't have the same name, It'll get confusing");
-                        }
-                        
-                        else
-                        {
-                            sideCharaterName = stringInput;
-                            validInput = true;
-                        }
-                    }
-                }
-            }
-            
-            Console.ReadKey();
-            while (validInput == false)
-            {
-            //Choose Class
+        /// <summary>
+        /// Gets the players choice of character. Updates player stats based on
+        /// the character chosen.
+        /// </summary>
+        public void CharacterSelection()
+        {
             Console.Clear();
-            input = GetInputThreeOptions("'So, who exactly are you?' They ask.\n" +
-            "Well obviously your " + charaterName + ", but what are you, like what do you do?",
-            "Warrior", "Archer", "Tank");
-
-                //Choose Warrior
-                if (input == 1 )
+            bool validJob = false;
+            //Loops while player has not confirmed their name
+            while (validJob == false)
+            {
+                int input = GetInput("'So I presume you are an adventurer.' They say, 'So what do you specialize in?'", "Knight", "Archer", "Wizard", "Tank");
+                switch (input)
                 {
-                    Console.WriteLine("Warrior HP: 75\n" +
-                    "Warrior Strength:40\n" +
-                    "Warrior Weapon: Promising Sword - 10 Dmg");
-            
-                    playerHealth = 75;
-                    strength = 40;
-                    className = "Warrior";
-                    weaponName = "Promising Sword";
-                    weaponDamage = 10;
+                    //Choose Knight
+                    case 0:
+                        _player = new Player(_playerName, 50, 25, 5, _knightItems, "Knight");
+                        break;
+                    //Choose Archer
+                    case 1:
+                        _player = new Player(_playerName, 50, 25, 5, _archerItems, "Archer");
+                        _player.InitializeArrows();
+                        break;
+                    //Choose Wizard
+                    case 2:
+                        _player = new Player(_playerName, 50, 25, 5, _wizardItems, "Wizard");
+                        break;
+                    //Choose Tank
+                    case 3:
+                        _player = new Player(_playerName, 50, 25, 5, _tankItems, "Tank");
+                        break;
                 }
-
-                //Choose Archer
-                else if (input == 2)
+                //Ask player if the are okay with their class
+                input = GetInput("Are you okay with this class?", "Yes", "No");
+                //IF yes
+                if (input == 0)
                 {
-                    Console.WriteLine("Archer HP: 90\n" +
-                    "Archer Strength:25\n" +
-                    "Archer Weapon: Promising Bow - 7 Dmg");
-
-                    playerHealth = 90;
-                    strength = 25;
-                    className = "Archer";
-                    weaponName = "Promising Bow";
-                    weaponDamage = 7;
+                    //End Loop
+                    validJob = true;
                 }
-
-                //Choose Tank
-                else if (input == 3)
+                //If no
+                else if (input == 1)
                 {
-                    Console.WriteLine("Tank HP: 150\n" +
-                    "Tank Strength:10\n" +
-                    "Tank Weapon: Promising Axe - 12 Dmg");
-            
-                    playerHealth = 150;
-                    strength = 10;
-                    className = "Tank";
-                    weaponName = "Promising Axe";
-                    weaponDamage = 12;
+                    //Continue Looping
                 }
             }
         }
 
-    //Room 1
-        void Room1()
-        {
-        //Intro
-        Console.Clear();
-        input = GetInput("The two of you enter a strange room. It's dark and difficult to see, but a dim light cracks through the "
-        + "door on the other side. \n Walk towards the door?", "Yes", "No");
-
-        //Player goes forward, and falls
-        if (input == 1)
-        {
-        Console.WriteLine("\n You walk forward, despite your lack of vision. \n" +
-        "This proves to be a problem as you lose your footing only a few steps in and fall deep into a large pit.");
-        playerHealth -= 50;
-        Console.WriteLine("You took 50 Damage. \n" +
-        "You have " + playerHealth + " HP remaining.");
-        Console.WriteLine("'Hey, are you okay?' " + sideCharaterName + " calls to you.\n");
-        Console.ReadKey();
-        Console.WriteLine("Suddenly, the dim room lights up, revealing a maze-like bridge.\n");
-        Console.WriteLine("'I found the lights! They were next to the door!' " + sideCharaterName + " shouts.");
-        Console.WriteLine("'There might be a way up further on in the maze! \n" +
-        "I'll cross up top and meet you on the other side.'\n");
-        Console.ReadKey();
-        Console.Clear();
-    
-    
-        //Enter Maze
-        //Maze Path = Left, Right, Forward
-        int mazeLoction = 0;
-        void MazeLocater()
-            {
-            while (mazeLoction != -1)
-                {
-                if (mazeLoction == 0)
-                    {
-                        input = GetInput("You look ahead at the towering wall ahead, you can either go left or right.\n" +
-                        "Which way will you go?", "Left", "Right");
-                        if (input == 1)
-                        {
-                            mazeLoction = 1;
-                        }
-                        if (input == 2)
-                        {
-    
-                        }
-                    }
-                }
-            }   
-        input = GetInput("You look ahead at the towering wall ahead, you can either go left or right.\n" +
-        "Which way will you go?", "Left", "Right");
-        if (input == 1)
-        {
-    
-        input = GetInput("You head left, and quickly hit a right turn.\n", "Right", "Back");
-        if (input == 1)
-        {
-    
-        input = GetInputThreeOptions("You take the path ahead, finally ending at a fork in the road, to continue straight," +
-        "or take a right?\n", "Forward", "Right", "Back");
-        if (input == 1)
-        {
-        input = GetInput("The path finishes with a large stretch of vines thick enough to climb on.\n" +
-        "Climb up?", "Yes", "No");
-        if (input == 1)
-        {
-
-        Console.WriteLine("You climb your way to the top, and you see " +sideCharaterName + "waiting for you.\n" +
-            "'Hello.' They say, waving at you. 'You sure took your time, huh.' While their tone is annoyed, they have an innocent smile on their face.");
-    
-        }
-        else if (input == 2)
-        {
-   
-        }
-        
-        }
-        else if (input == 2)
-        {
-        Console.WriteLine("The road leads into a dead end.");
-        Console.ReadKey();
-        Console.Clear();
-        Console.Clear();    
-        }
-        else if (input == 3)
-        {
-
-        }
-    
-        }
-        else if (input == 2)
-        {
-   
-        }
-    
-        }
-        else if (input == 2)
-        {
-
-        }
-    
-        }
-        else if (input == 2)
-        {
-        validInput = true;
-        }
-        else
-        {
-        Console.WriteLine("Invalid input.");
-        Console.ReadKey();
-        Console.Clear();
-        }
-        Console.Clear();
-        }
-
-        void Room2()
-        {
-        Console.WriteLine("You enter a small room with a tightly sealed door infront of you.\n\n" +
-        sideCharaterName + " perks up, exclaming 'Oh, I know this puzzle, I think.\n" +
-        "Anyways you have to guess the correct order of the switches to open the doors ahead!'\n" +
-        sideCharaterName + " is right, as you see five levers to your right all in random positions labeled 1 to 5.\n" +
-        "Be careful, you only get 5 tries");
-        Console.ReadKey();
-        Console.Clear();
-            for (int i = 0; i <= attempts; i++)
-            {
-            //Using Bools to change varables and write if statements easier
-            //True = Closed - False = Open
-            bool door1 = true;
-            bool door2 = false;
-            bool door3 = true;
-            bool door4 = true;
-            bool door5 = false;
-            int attemptsRemain = attempts - i;
-            bool eventComplete = false;
-            if (door1 == false && door2 == false && door3 == false && door4 == false && door5 == false)
-            {
-            eventComplete = true;
-            }
-                if (eventComplete == false)
-                {
-                    Console.WriteLine("Careful, you only have " + attemptsRemain + " attempts remaining");
-                    if (door1)
-                    {
-                    Console.WriteLine("Door 1: Closed");
-                    }
-                    else
-                    {
-                    Console.WriteLine("Door 1: Open");
-                    }
-                    if (door2)
-                    {
-                    Console.WriteLine("Door 2: Closed");
-                    }
-                    else
-                    {
-                    Console.WriteLine("Door 2: Open");
-                    }
-                    if (door3)
-                    {
-                    Console.WriteLine("Door 3: Closed");
-                    }
-                    else
-                    {
-                    Console.WriteLine("Door 3: Open");
-                    }
-                    if (door4)
-                    {
-                    Console.WriteLine("Door 4: Closed");
-                    }
-                    else
-                    {
-                    Console.WriteLine("Door 4: Open");
-                    }
-                    if (door5)
-                    {
-                    Console.WriteLine("Door 5: Closed");
-                    }
-                    else
-                    {
-                    Console.WriteLine("Door 5: Open");
-                    }
-                Console.WriteLine("\nPull one of Levers.");
-                Console.Write(">");
-                Console.ReadLine();
-                }
-                else
-                {
-                break;
-                }
-            }
-        }
         public void Run()
         {
-            while (gameOver == false)
-            {
-            StartScreen();
-            Room1();
-            Room2();
+            Start();
 
-                if (gameOver == true || currentArea == 3)
-                {
-                    
-                }
+            while (_gameOver == false)
+            {
+                Update();
             }
+
+            End();
         }
     }
 }
