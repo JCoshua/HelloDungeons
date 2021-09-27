@@ -10,7 +10,7 @@ namespace HelloDungeons
         private string _name;
         private float _health;
         private float _attackPower;
-        private float _defencePower;
+        private float _defensePower;
         private float _gold;
 
         public string Name
@@ -28,15 +28,16 @@ namespace HelloDungeons
             get { return _attackPower; }
         }
 
-        public virtual float DefencePower
+        public virtual float DefensePower
         {
-            get { return _defencePower; }
+            get { return _defensePower; }
         }
 
         public float Gold
         {
             get { return _gold; }
         }
+
         /// <summary>
         /// Creates a default instance of an Entity
         /// </summary>
@@ -45,8 +46,7 @@ namespace HelloDungeons
             _name = "Default";
             _health = 0;
             _attackPower = 0;
-            _defencePower = 0;
-
+            _defensePower = 0;
         }
 
         /// <summary>
@@ -61,8 +61,20 @@ namespace HelloDungeons
             _name = name;
             _health = health;
             _attackPower = attackPower;
-            _defencePower = defensePower;
+            _defensePower = defensePower;
             _gold = gold;
+        }
+
+        public void Pay(Item item)
+        {
+
+            //Removes the cost of the item from the player
+            _gold -= item.Cost;
+
+            //Tells the player that the puchase was successful
+            Console.Clear();
+            Console.WriteLine("You bought a " + item.Name + "!");
+            Console.ReadKey(true);
         }
 
         /// <summary>
@@ -70,22 +82,23 @@ namespace HelloDungeons
         /// </summary>
         /// <param name="damageAmount"> Amount of damage that the Entity would take</param>
         /// <returns>How much damage the Entity actually takes</returns>
-        public float TakeDamage(float damageAmount)
+        public virtual float DamageInflicted(float damageAmount)
         {
-            float damageTaken = damageAmount - DefencePower;
+            float damageTaken = damageAmount - DefensePower;
 
-            if (damageTaken < 0)
+            if (damageTaken <= 0)
             {
                 damageTaken = 1;
             }
 
-            _health -= damageTaken;
-
             return damageTaken;
-
-
         }
 
+        public float TakeDamage(float damageTaken)
+        {
+            _health -= damageTaken;
+            return damageTaken;
+        }
         /// <summary>
         /// Makes the entity take damage
         /// </summary>
@@ -93,7 +106,8 @@ namespace HelloDungeons
         /// <returns>Damage taken</returns>
         public virtual float Attack(Entity defender)
         {
-            return defender.TakeDamage(AttackPower);
+            float damage = DamageInflicted(AttackPower);
+            return defender.TakeDamage(damage);
         }
 
         /// <summary>
@@ -104,7 +118,7 @@ namespace HelloDungeons
             writer.WriteLine(_name);
             writer.WriteLine(_health);
             writer.WriteLine(_attackPower);
-            writer.WriteLine(_defencePower);
+            writer.WriteLine(_defensePower);
         }
 
         /// <summary>
@@ -121,7 +135,7 @@ namespace HelloDungeons
             if (!float.TryParse(reader.ReadLine(), out _attackPower))
                 return false;
 
-            if (!float.TryParse(reader.ReadLine(), out _defencePower))
+            if (!float.TryParse(reader.ReadLine(), out _defensePower))
                 return false;
 
             return true;
