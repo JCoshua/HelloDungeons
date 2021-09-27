@@ -9,6 +9,7 @@ namespace HelloDungeons
     {
         private string _name;
         private float _health;
+        private float _maxHealth;
         private float _attackPower;
         private float _defensePower;
         private float _gold;
@@ -21,6 +22,11 @@ namespace HelloDungeons
         public float Health
         {
             get { return _health; }
+        }
+
+        public float MaxHealth
+        {
+            get { return _maxHealth; }
         }
 
         public virtual float AttackPower
@@ -56,15 +62,20 @@ namespace HelloDungeons
         /// <param name="health">The Entity's HP</param>
         /// <param name="attackPower">The Entity's Attack Power</param>
         /// <param name="defensePower">The Entity's Defence Power</param>
-        public Entity(string name, float health, float attackPower, float defensePower, float gold)
+        public Entity(string name, float maxHealth, float health, float attackPower, float defensePower, float gold)
         {
             _name = name;
+            _maxHealth = maxHealth;
             _health = health;
             _attackPower = attackPower;
             _defensePower = defensePower;
             _gold = gold;
         }
 
+        /// <summary>
+        /// A function that makes the player pay for the items
+        /// </summary>
+        /// <param name="item">Item being bought</param>
         public void Pay(Item item)
         {
 
@@ -82,9 +93,9 @@ namespace HelloDungeons
         /// </summary>
         /// <param name="damageAmount"> Amount of damage that the Entity would take</param>
         /// <returns>How much damage the Entity actually takes</returns>
-        public virtual float DamageInflicted(float damageAmount)
+        public virtual float DamageInflicted(float damageAmount, float Defender)
         {
-            float damageTaken = damageAmount - DefensePower;
+            float damageTaken = damageAmount - Defender;
 
             if (damageTaken <= 0)
             {
@@ -99,6 +110,17 @@ namespace HelloDungeons
             _health -= damageTaken;
             return damageTaken;
         }
+
+        public float HealDamage(float healAmount)
+        {
+            _health += healAmount;
+            if (_health >= _maxHealth)
+            {
+                _health = _maxHealth;
+            }
+            return healAmount;
+        }
+
         /// <summary>
         /// Makes the entity take damage
         /// </summary>
@@ -106,7 +128,7 @@ namespace HelloDungeons
         /// <returns>Damage taken</returns>
         public virtual float Attack(Entity defender)
         {
-            float damage = DamageInflicted(AttackPower);
+            float damage = DamageInflicted(AttackPower, defender.DefensePower);
             return defender.TakeDamage(damage);
         }
 

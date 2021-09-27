@@ -9,6 +9,7 @@ namespace HelloDungeons
         STARTMENU,
         CHARACTERSELECTION,
         ROOM1,
+        ROOM2,
         BATTLE,
         RESTARTMENU
     }
@@ -45,7 +46,7 @@ namespace HelloDungeons
         private Entity[] _enemies;
         private string _playerName;
 
-        private int _currentEnemyIndex = 0;
+        private int _currentArea;
         private Entity _currentEnemy;
 
         private Item[] _knightItems;
@@ -65,6 +66,8 @@ namespace HelloDungeons
         private Item _ironChestplate;
 
         public Item[] _shopInventory;
+
+        private Entity windShearer;
 
         /// <summary>
         /// Gets the Input of the player
@@ -123,11 +126,12 @@ namespace HelloDungeons
         private void Start()
         {
             _gameOver = false;
-            IntitalizeItems();
+            InitializeItems();
+            InitializeEnemies();
 
         }
 
-        public void IntitalizeItems()
+        public void InitializeItems()
         {
             //Knight Base Items
             _basicSword = new Item { Name = "Promising Sword", StatBoost = 10, Type = ItemType.SWORD };
@@ -135,13 +139,13 @@ namespace HelloDungeons
             _knightArmor = new Item { Name = "Knight's Armor", StatBoost = 5, Type = ItemType.ARMOR }; 
 
             //Archer Base Items
-            _basicBow = new Item { Name = "Promising Bow", StatBoost = 14, Type = ItemType.BOW };
+            _basicBow = new Item { Name = "Promising Bow", StatBoost = 20, Type = ItemType.BOW };
             _hunterTunic = new Item { Name = "Hunter's Tunic", StatBoost = 5, Type = ItemType.ARMOR };
             _arrow = new Item { Name = "Arrow", StatBoost = 1, Type = ItemType.CONSUMABLES };
             
             //Wizard Base Items
-            _stick = new Item { Name = "Wooden Stick", StatBoost = 5, Type = ItemType.WAND };
-            _basicRobes = new Item { Name = "Wizard's Robe", StatBoost = 5, Type = ItemType.ARMOR };
+            _stick = new Item { Name = "Wooden Stick", StatBoost = 10, Type = ItemType.WAND };
+            _basicRobes = new Item { Name = "Wizard's Robe", StatBoost = 10, Type = ItemType.ARMOR };
 
             //Tank Base Items
             _reinforcedShield = new Item { Name = "Reinforced Shield", StatBoost = 15, Type = ItemType.SHIELD };
@@ -153,6 +157,11 @@ namespace HelloDungeons
             _wizardItems = new Item[] { _stick, _basicRobes };
             _tankItems = new Item[] { _basicSword, _reinforcedShield, _ironChestplate };
             _shopInventory = new Item[] { _basicSword, _basicShield, _basicBow, _reinforcedShield, _arrow };
+        }
+
+        public void InitializeEnemies()
+        {
+            windShearer = new Entity("The Wind Shearer", 75, 75, 30, 15, 75);
         }
 
         /// <summary>
@@ -190,14 +199,17 @@ namespace HelloDungeons
                 case Scene.BATTLE:
                     Battle();
                     Console.ReadKey(true);
-                    Console.Clear();
                     break;
 
                 case Scene.ROOM1:
                     Room1();
                     break;
 
+                case Scene.ROOM2:
+                    Room2();
+                    break;
                 case Scene.RESTARTMENU:
+                    DisplayRestartMenu();
                     break;
 
                 default:
@@ -239,6 +251,9 @@ namespace HelloDungeons
 
             //Choose Class
             CharacterSelection();
+
+            //Changes Scene
+            _currentScene = Scene.ROOM1;
         }
 
         /// <summary>
@@ -303,20 +318,30 @@ namespace HelloDungeons
                 {
                     //Choose Knight
                     case 0:
-                        _player = new Player(_playerName, 50, 25, 5, 20, _knightItems, "Knight");
+                        _player = new Player(_playerName, 75, 75, 15, 15, 20, _knightItems, "Knight");
+                        _player.TryEquipItem(0);
+                        _player.TryEquipItem(1);
+                        _player.TryEquipItem(2);
                         break;
                     //Choose Archer
                     case 1:
-                        _player = new Player(_playerName, 50, 25, 5, 20, _archerItems, "Archer");
+                        _player = new Player(_playerName, 60, 60, 20, 10, 20, _archerItems, "Archer");
+                        _player.TryEquipItem(0);
+                        _player.TryEquipItem(1);
                         _player.InitializeArrows();
                         break;
                     //Choose Wizard
                     case 2:
-                        _player = new Player(_playerName, 50, 25, 5, 20, _wizardItems, "Wizard");
+                        _player = new Player(_playerName, 60, 60, 25, 5, 20, _wizardItems, "Wizard");
+                        _player.TryEquipItem(0);
+                        _player.TryEquipItem(1);
                         break;
                     //Choose Tank
                     case 3:
-                        _player = new Player(_playerName, 50, 25, 5, 20, _tankItems, "Tank");
+                        _player = new Player(_playerName, 100, 100, 10, 20, 20, _tankItems, "Tank");
+                        _player.TryEquipItem(0);
+                        _player.TryEquipItem(1);
+                        _player.TryEquipItem(2);
                         break;
                 }
                 //Ask player if the are okay with their class
@@ -341,9 +366,10 @@ namespace HelloDungeons
         /// <param name="character">The character that will have its stats shown</param>
         void DisplayStats(Entity character)
         {
-            Console.WriteLine(character.Name + " Health: " + character.Health);
-            Console.WriteLine(character.Name + " Attack: " + character.AttackPower);
-            Console.WriteLine(character.Name + " Defence: " + character.DefensePower);
+            Console.WriteLine(character.Name);
+            Console.WriteLine("Health: " + character.Health);
+            Console.WriteLine("Attack: " + character.AttackPower);
+            Console.WriteLine("Defense: " + character.DefensePower);
             Console.WriteLine();
         }
         private string[] GetInventory()
@@ -356,7 +382,7 @@ namespace HelloDungeons
                 itemNames[i] = _player.Items[i].Name;
             }
 
-            itemNames[itemNames.Length] = "Cancel";
+            itemNames[itemNames.Length - 1] = "Cancel";
             //returns the new array
             return itemNames;
         }
@@ -371,7 +397,7 @@ namespace HelloDungeons
 
 
             //If input is within scope
-            if (input < GetInventory().Length && input > 0)
+            if (input < GetInventory().Length && input >= 0)
             {   
                 //If item is not a potion/consumable
                 if (_player.Items[input].Type != ItemType.CONSUMABLES || _player.Items[input].Type != ItemType.POTION)
@@ -399,7 +425,7 @@ namespace HelloDungeons
                     else if (choice == 1)
                     {
                         //Call the unequip function
-                        _player.TryUnequip();
+                        _player.TryUnequip(input);
                     }
                 }
 
@@ -412,9 +438,10 @@ namespace HelloDungeons
                 
             }
             //If input is the last option
-            else if (input == GetInventory().Length)
-            {
+            else if (input == GetInventory().Length - 1)
+            {   
                 //Leave the menu
+                return;
             }
         }
 
@@ -436,7 +463,6 @@ namespace HelloDungeons
             {
                 Console.Clear();
                 DisplayEquipMenu();
-                Console.ReadKey(true);
                 return;
             }
             else if (input == 2)
@@ -444,14 +470,58 @@ namespace HelloDungeons
                 Console.Clear();
                 //Save();
                 Console.WriteLine("Saved Game");
+                Console.Clear();
                 return;
             }
 
             damageDealt = _currentEnemy.Attack(_player);
             Console.WriteLine("You took " + damageDealt + " damage.");
-            //CheckBattleResults();
+            CheckBattleResults();
         }
 
+        void CheckBattleResults()
+        {
+            //If the player loses
+            if (_player.Health <= 0)
+            {
+                Console.WriteLine("\nYou Died");
+                _currentScene = Scene.RESTARTMENU;
+            }
+
+            //If the enemy dies...
+            else if (_currentEnemy.Health <= 0)
+            {
+                Console.WriteLine("\nYou slayed the " + _currentEnemy.Name + "!");
+                CheckLocation(_currentArea);
+            }
+        }
+
+        /// <summary>
+        /// Displays the menu that allows the player to restart or quit the game
+        /// </summary>
+        void DisplayRestartMenu()
+        {
+            int input = GetInput("Would you like to play again?", "Yes", "No");
+            if (input == 0)
+            {
+                InitializeEnemies();
+                _currentScene = Scene.CHARACTERSELECTION;
+            }
+            else if (input == 1)
+            {
+                _gameOver = true;
+            }
+        }
+
+        void CheckLocation(int currentArea)
+        {
+            switch(currentArea)
+            {
+                case 1:
+                    _currentScene = Scene.ROOM2;
+                    break;
+            }
+        }
         void Room1()
         {
             Console.WriteLine("Aeos joyfully enters into the dungeon, as you follow, keeping careful notice of potential hazards.\n");
@@ -462,15 +532,13 @@ namespace HelloDungeons
                 Console.WriteLine("You walk ahead dispite your lack of vision, which proves to be a bad decision as you fall a long way down.\n " +
                     "Shortly, the lights come on, and you see towering walls above you, acting as a walkway.\n" +
                     "You then hear Aeos call down to you: 'I found the lights! There should be a way back up somewhere down there, I meet upwith you when you find it!'");
+                Console.ReadKey(true);
                 int mazeLocation = 1;
                 while (mazeLocation != -1)
                 {
                     Console.Clear();
                     switch (mazeLocation)
                     { 
-                        case 0:
-                            Console.WriteLine("You Stumbled across a dead end");
-                            break;
                         case 1:
                             input = GetInput("You look around and see a path both ahead and behind you. Which path will you take", "Forwards", "Backwards");
                             if (input == 0)
@@ -490,7 +558,8 @@ namespace HelloDungeons
                             }
                             else if (input == 1)
                             {
-                                mazeLocation = 0;
+                                Console.WriteLine("You Stumbled across a dead end");
+                                Console.ReadKey(true);
                             }
                             else if (input == 2)
                             {
@@ -501,7 +570,8 @@ namespace HelloDungeons
                             input = GetInput("You continue forwards and find a intersection. Which way will you proceed", "Foward", "Left", "Right", "Back");
                             if(input == 0)
                             {
-                                mazeLocation = 0;
+                                Console.WriteLine("You Stumbled across a dead end");
+                                Console.ReadKey(true);
                             }
                             else if(input == 1)
                             {
@@ -520,7 +590,8 @@ namespace HelloDungeons
                             input = GetInput("You head left from the intersection and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back");
                             if(input == 0)
                             {
-                                mazeLocation = 0;
+                                Console.WriteLine("You Stumbled across a dead end");
+                                Console.ReadKey(true);
                             }
                             else if(input == 1)
                             {
@@ -546,11 +617,13 @@ namespace HelloDungeons
                             input = GetInput("You walk right from the intersection and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back");
                             if (input == 0)
                             {
-                                mazeLocation = 0;
+                                Console.WriteLine("You Stumbled across a dead end");
+                                Console.ReadKey(true);
                             }
                             else if (input == 1)
                             {
-                                mazeLocation = 0;
+                                Console.WriteLine("You Stumbled across a dead end");
+                                Console.ReadKey(true);
                             }
                             else if (input == 2)
                             {
@@ -565,7 +638,8 @@ namespace HelloDungeons
                             }
                             else if (input == 1)
                             {
-                                mazeLocation = 0;
+                                Console.WriteLine("You Stumbled across a dead end");
+                                Console.ReadKey(true);
                             }
                             else if (input == 2)
                             {
@@ -580,7 +654,8 @@ namespace HelloDungeons
                             input = GetInput("You keep heading forwards and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back");
                             if (input == 0)
                             {
-                                mazeLocation = 0;
+                                Console.WriteLine("You Stumbled across a dead end");
+                                Console.ReadKey(true);
                             }
                             else if (input == 1)
                             {
@@ -606,11 +681,13 @@ namespace HelloDungeons
                             input = GetInput("You head right from the intersection and and reach a fork in the road. You can keep going forwards, or go left.", "Forwards", "Left", "Back");
                             if (input == 0)
                             {
-                                mazeLocation = 0;
+                                Console.WriteLine("You Stumbled across a dead end");
+                                Console.ReadKey(true);
                             }
                             else if (input == 1)
                             {
-                                mazeLocation = 0;
+                                Console.WriteLine("You Stumbled across a dead end");
+                                Console.ReadKey(true);
                             }
                             else if (input == 2)
                             {
@@ -632,10 +709,102 @@ namespace HelloDungeons
                 Console.WriteLine("You stay still and take small movements around the room, and you feel a drop not to far in. You can't tell how far, but falling in would be dangerous.\n" +
                     "The lights suddenly go on as you look towards Aeos, who seems to have activated some contraption.\n\n 'I found the lights!' They say.\n" +
                     "You look back down and see how far the hole drops. The pit is very deep, such a fall could of been fatal. You begin to cross a maze-like bridge, admiring the chasm below.");
+                Console.ReadKey(true);
             }
-            Console.WriteLine("You begin to head towards the next room, but a screech from below you echoes through the room.\n A large avian creature arise from the depths of the pit.");
+            Console.Clear();
+            Console.WriteLine("You begin to head towards the next room, but a screech from below you echoes through the room.\n" +
+                "A large avian creature arise from the depths of the pit, It lunges at you with tremendous force.");
+            Console.ReadKey(true);
+            _currentArea = 1;
+            _currentEnemy = windShearer;
+            _currentScene = Scene.BATTLE;
         }
         
+        void Room2()
+        {
+            Console.WriteLine("The Wind Shearer howls in agony while trying to stay airborne, before finally falling to the depths it emerged from.\n" +
+                "'Wow, that was scary, but you sure are strong.' Aeos remarks.");
+            Console.ReadKey(true);
+            Console.Clear();
+
+            Console.WriteLine("The two of you emerge into a second room. It is much smaller than the first, and doesn't seem to have an exit.\n" +
+                "All you see before you are 5 switches\n\n" +
+                "Aeos jumps from behind you and exclaims 'Wait, I know this room. This wall here is a locked door, a door that can only be openned by those levers." +
+                "\nYou ask what combination opens the door, and they look embarrased and say: I don't actually know...'\n\n" +
+                "You sigh and look at the levers");
+            Console.Clear();
+            //Amount of attempts remaining
+            for (int i = 0; i < 5; i++)
+            {
+                if (i == 0)
+                {
+                    //This is a lie
+                    Console.WriteLine("There's no time limit, so don't worry.\n");
+                }
+                else if(i == 2)
+                {
+                    //First warning
+                    Console.WriteLine("You feel a strange rumble in the floor.")
+                }
+                //True = Up
+                //False = Down
+                bool lever1 = true;
+                bool lever2 = false;
+                bool lever3 = true;
+                bool lever4 = false;
+                bool lever5 = false;
+                Console.WriteLine("You see 5 levers before you all in these positions");
+                //Lever 1 Position
+                if (lever1)
+                    Console.WriteLine("Lever 1: Up");
+                else
+                    Console.WriteLine("Lever 1: Down");
+                //Lever 2 Position
+                if (lever2)
+                    Console.WriteLine("Lever 2: Up");
+                else
+                    Console.WriteLine("Lever 2: Down");
+                //Lever 3 Position
+                if (lever3)
+                    Console.WriteLine("Lever 3: Up");
+                else
+                    Console.WriteLine("Lever 3: Down");
+                //Lever 4 Position
+                if (lever4)
+                    Console.WriteLine("Lever 4: Up");
+                else
+                    Console.WriteLine("Lever 4: Down");
+                //Lever 2 Position
+                if (lever5)
+                    Console.WriteLine("Lever 5: Up");
+                else
+                    Console.WriteLine("Lever 5: Down");
+                int input = GetInput("Choose a lever to pull", "Lever 1", "Lever 2", "Lever 3", "Lever 4", "Lever 5");
+                switch (input)
+                {
+                    //Lever 1 is swapped
+                    case 0:
+                        lever1 = !lever1;
+                        break;
+                    //Lever 2 is swapped
+                    case 1:
+                        lever2 = !lever2;
+                        break;
+                    //Lever 3 is swapped
+                    case 2:
+                        lever3 = !lever3;
+                        break;
+                    //Lever 4 is swapped
+                    case 3:
+                        lever4 = !lever4;
+                        break;
+                    //Lever 5 is swapped
+                    case 4:
+                        lever5 = !lever5;
+                        break;
+                }
+            }
+        }
         public void Run()
         {
             Start();
