@@ -6,7 +6,6 @@ namespace HelloDungeons
 {
     class Shop
     {
-        private int _gold;
         private Item[] _shopInventory;
 
         /// <summary>
@@ -15,9 +14,7 @@ namespace HelloDungeons
         /// <param name="items"></param>
         public Shop(Item[] items)
         {
-            _gold = 100;
             _shopInventory = items;
-
         }
 
         /// <summary>

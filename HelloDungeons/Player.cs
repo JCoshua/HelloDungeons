@@ -7,18 +7,16 @@ namespace HelloDungeons
     class Player:Entity
     {
         private Item[] _items;
-        private Item _currentWeapon;
-        private Item _currentShield;
-        private Item _currentArmor;
-        private Item _currentHelmet;
-        private Item _currentGloves;
-        private Item _currentBoots;
+        private Item[] _equipment = new Item[6];
         private Item _currentItem;
         private int _currentItemIndex;
         private string _job;
-        private int _arrowCount;
-        private int _currentConsumable;
 
+        public Player(string name, float maxHealth, float health, float attackPower, float defensePower, float gold, Item[] items, string job) : base(name, maxHealth, health, attackPower, defensePower, gold)
+        {
+            _items = items;
+            _job = job;
+        }
 
         /// <summary>
         /// Changes the Attack value if player is weilding weapon
@@ -29,8 +27,8 @@ namespace HelloDungeons
             {
                 float attackPower = base.AttackPower;
 
-                if (_currentWeapon.Type == ItemType.SWORD || _currentWeapon.Type == ItemType.BOW || _currentWeapon.Type == ItemType.WAND)
-                    attackPower = base.AttackPower + CurrentWeapon.StatBoost;
+                if (_equipment[0].Type == ItemType.SWORD || _equipment[0].Type == ItemType.BOW || _equipment[0].Type == ItemType.WAND)
+                    attackPower = base.AttackPower + _equipment[0].StatBoost;
 
                 return attackPower;
             }
@@ -46,20 +44,20 @@ namespace HelloDungeons
             {
                 float defensePower = base.DefensePower;
 
-                if (_currentShield.Type == ItemType.SHIELD)
-                    defensePower += _currentShield.StatBoost;
+                if (_equipment[1].Type == ItemType.SHIELD)
+                    defensePower += _equipment[1].StatBoost;
 
-                if (_currentArmor.Type == ItemType.ARMOR)
-                    defensePower += _currentArmor.StatBoost;
+                if (_equipment[2].Type == ItemType.ARMOR)
+                    defensePower += _equipment[2].StatBoost;
 
-                if (_currentHelmet.Type == ItemType.HELMET)
-                    defensePower += _currentHelmet.StatBoost;
+                if (_equipment[3].Type == ItemType.HELMET)
+                    defensePower += _equipment[3].StatBoost;
 
-                if (_currentGloves.Type == ItemType.GLOVES)
-                    defensePower += _currentGloves.StatBoost;
+                if (_equipment[4].Type == ItemType.GLOVES)
+                    defensePower += _equipment[4].StatBoost;
 
-                if (_currentBoots.Type == ItemType.BOOTS)
-                    defensePower += _currentBoots.StatBoost;
+                if (_equipment[5].Type == ItemType.BOOTS)
+                    defensePower += _equipment[5].StatBoost;
 
                 return defensePower;
             }
@@ -72,47 +70,9 @@ namespace HelloDungeons
             { return _items; }
         }
 
-        public Item CurrentWeapon
-        {
-            get
-            { return _currentWeapon; }
-        }
-
-        public Item CurrentShield
-        {
-            get
-            { return _currentShield; }
-        }
-
-        public Item CurrentArmor
-        {
-            get
-            { return _currentArmor; }
-        }
-
-        public Item CurrentHelmet
-        {
-            get
-            { return _currentHelmet; }
-        }
-        public Item CurrentGloves
-        {
-            get
-            { return _currentGloves; }
-        }
-
-        public Item CurrentBoots
-        {
-            get { return _currentBoots; }
-        }
-
         public Item CurrentItem
         {
             get { return _currentItem; }
-        }
-        public int ArrowCount
-        {
-            get { return _arrowCount; }
         }
 
         public override float DamageInflicted(float damageAmount, float Defender)
@@ -120,19 +80,19 @@ namespace HelloDungeons
             Random rnd = new Random();
             int rngDamage = new Random().Next(-5, 5);
             float damageTaken = 0;
-            if (_currentWeapon.Type == ItemType.NONE)
+            if (_equipment[0].Type == ItemType.NONE)
             {
                 damageTaken = damageAmount - Defender + rngDamage;
             }
-            else if (_currentWeapon.Type == ItemType.SWORD)
+            else if (_equipment[0].Type == ItemType.SWORD)
             {
                 damageTaken = (damageAmount * 2) - (Defender * 2) + rngDamage;
             }
-            else if (_currentWeapon.Type == ItemType.BOW)
+            else if (_equipment[0].Type == ItemType.BOW)
             {
                 damageTaken = damageAmount - Defender + rngDamage + rngDamage; 
             }
-            else if (_currentWeapon.Type == ItemType.WAND)
+            else if (_equipment[0].Type == ItemType.WAND)
             {
                 damageTaken = (damageAmount + rngDamage) / 2;
             }
@@ -145,6 +105,42 @@ namespace HelloDungeons
             return damageTaken;
         }
 
+        //Gives the player the item they bought and puts it in their inventory
+        public void Buy(Item item)
+        {
+            Pay(item);
+            //Creates a new array to add the Item
+            Item[] TempArray = new Item[_items.Length + 1];
+
+            //Copies the old inventory into the array
+            for (int i = 0; i < _items.Length; i++)
+            {
+                TempArray[i] = _items[i];
+            }
+
+            //Add the bought item
+            TempArray[TempArray.Length - 1] = item;
+
+            //Makes the inventory becomes the new array
+            _items = TempArray;
+        }
+
+        //Gives the player the item they bought and puts it in their inventory
+        public void UseConsumable(Item item)
+        {
+            //Creates a new array to remove the Item
+            Item[] TempArray = new Item[_items.Length - 1];
+
+            //Copies the old inventory into the array
+            for (int i = 0; i <= TempArray.Length; i++)
+            {
+                if(_items[i].Name != item.Name)
+                    TempArray[i] = _items[i];
+            }
+
+            //Makes the inventory becomes the new array
+            _items = TempArray;
+        }
 
         /// <summary>
         /// Sets the item given at the current index
@@ -156,34 +152,51 @@ namespace HelloDungeons
             //If the index is out of bounds
             if (index >= _items.Length || index < 0)
                 return false;
-
             _currentItemIndex = index;
 
             //Sets the current item 
             _currentItem = _items[index];
             if (_currentItem.Type == ItemType.SWORD || _currentItem.Type == ItemType.BOW || _currentItem.Type == ItemType.WAND)
             {
-                _currentWeapon = _currentItem;
+                if (_equipment[0].Name != null)
+                    return false;
+                else
+                    _equipment[0] = _currentItem;
             }
-            else if (_currentItem.Type == ItemType.SHIELD && (_currentWeapon.Type != ItemType.BOW || _currentWeapon.Type != ItemType.WAND))
+            else if (_currentItem.Type == ItemType.SHIELD && (_equipment[0].Type != ItemType.BOW || _equipment[0].Type != ItemType.WAND))
             {
-                _currentShield = _currentItem;
+                if (_equipment[1].Name != null)
+                    return false;
+                else
+                    _equipment[1] = _currentItem;
             }
             else if (_currentItem.Type == ItemType.ARMOR)
             {
-                _currentArmor = _currentItem;
+                if (_equipment[2].Name != null)
+                    return false;
+                else
+                    _equipment[2] = _currentItem;
             }
             else if (_currentItem.Type == ItemType.HELMET)
             {
-                _currentHelmet = _currentItem;
+                if (_equipment[3].Name != null)
+                    return false;
+                else
+                    _equipment[3] = _currentItem;
             }
             else if (_currentItem.Type == ItemType.GLOVES)
             {
-                _currentGloves = _currentItem;
+                if (_equipment[4].Name != null)
+                    return false;
+                else
+                    _equipment[4] = _currentItem;
             }
             else if (_currentItem.Type == ItemType.BOOTS)
             {
-                _currentBoots = _currentItem;
+                if (_equipment[5].Name != null)
+                    return false;
+                else
+                    _equipment[5] = _currentItem;
             }
             return true;
         }
@@ -196,29 +209,35 @@ namespace HelloDungeons
         {
             if(_items[item].Type == ItemType.SWORD || _items[item].Type == ItemType.BOW || _items[item].Type == ItemType.WAND)
             {
-                _currentWeapon = new Item();
-                _currentWeapon.Name = "Nothing";
+                _equipment[0] = new Item();
+                _equipment[0].Name = null;
             }
             else if (_items[item].Type == ItemType.SHIELD)
             {
-                _currentShield = new Item();
-                _currentShield.Name = "Nothing";
+                _equipment[1] = new Item();
+                _equipment[1].Name = null;
+            }
+            else if (_items[item].Type == ItemType.ARMOR)
+            {
+                _equipment[2] = new Item();
+                _equipment[2].Name = null;
             }
             else if (_items[item].Type == ItemType.HELMET)
             {
-                _currentHelmet = new Item();
-                _currentHelmet.Name = "Nothing";
-            }
-            else if (_items[item].Type == ItemType.BOOTS)
-            {
-                _currentBoots = new Item();
-                _currentBoots.Name = "Nothing";
+                _equipment[3] = new Item();
+                _equipment[3].Name = null;
             }
             else if (_items[item].Type == ItemType.GLOVES)
             {
-                _currentGloves = new Item();
-                _currentGloves.Name = "Nothing";
+                _equipment[4] = new Item();
+                _equipment[4].Name = null;
             }
+            else if (_items[item].Type == ItemType.BOOTS)
+            {
+                _equipment[5] = new Item();
+                _equipment[5].Name = null;
+            }
+            Console.WriteLine("You unequipped " + _items[item].Name);
         }
 
         public void ItemBought(Item item)
@@ -258,15 +277,6 @@ namespace HelloDungeons
             return itemNames;
         }
 
-        public Player(string name, float maxHealth, float health, float attackPower, float defensePower, float gold, Item[] items, string job) : base(name, maxHealth, health, attackPower, defensePower, gold)
-        {
-            _items = items;
-            _job = job;
-        }
-
-        public void InitializeArrows()
-        {
-            _arrowCount = 15;
-        }
+        
     }
 }

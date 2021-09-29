@@ -116,9 +116,17 @@ namespace HelloDungeons
             _health += healAmount;
             if (_health >= _maxHealth)
             {
+                float extraHealth = _health - _maxHealth;
+                healAmount -= extraHealth;
                 _health = _maxHealth;
             }
             return healAmount;
+        }
+
+        public float getMoney(Entity enemy)
+        {
+            _gold += enemy._gold;
+            return enemy._gold;
         }
 
         /// <summary>
