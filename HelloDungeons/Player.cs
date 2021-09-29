@@ -77,20 +77,19 @@ namespace HelloDungeons
 
         public override float DamageInflicted(float damageAmount, float Defender)
         {
-            Random rnd = new Random();
             int rngDamage = new Random().Next(-5, 5);
             float damageTaken = 0;
             if (_equipment[0].Type == ItemType.NONE)
             {
-                damageTaken = damageAmount - Defender + rngDamage;
+                damageTaken = (damageAmount + rngDamage) - Defender ;
             }
             else if (_equipment[0].Type == ItemType.SWORD)
             {
-                damageTaken = (damageAmount * 2) - (Defender * 2) + rngDamage;
+                damageTaken = ((damageAmount * 2) + rngDamage) - (Defender * 2) ;
             }
             else if (_equipment[0].Type == ItemType.BOW)
             {
-                damageTaken = damageAmount - Defender + rngDamage + rngDamage; 
+                damageTaken = (damageAmount + rngDamage + rngDamage) - Defender ; 
             }
             else if (_equipment[0].Type == ItemType.WAND)
             {

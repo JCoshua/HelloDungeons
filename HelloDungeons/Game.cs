@@ -9,9 +9,13 @@ namespace HelloDungeons
         STARTMENU,
         CHARACTERSELECTION,
         ROOM1,
+        ROOM1MAZE,
+        ROOM1BATTLE,
         ROOM2,
         ROOM2BATTLE,
         ROOM3,
+        STAIRS,
+        FINALBOSS,
         BATTLE,
         SHOP,
         RESTARTMENU
@@ -43,21 +47,29 @@ namespace HelloDungeons
     class Game
     {
         private bool _gameOver;
-        private Scene _currentScene = 0;
         private Player _player;
         private Shop _shop;
         private Entity[] _enemies;
+        private Entity[] _bosses;
         private string _playerName;
 
+        private Scene _currentScene = 0;
         private int _currentArea;
         private Entity _currentEnemy;
+        private Item[] _currentShop;
 
         private Item[] _knightItems;
         private Item[] _archerItems;
         private Item[] _wizardItems;
         private Item[] _tankItems;
 
-        public Item[] _shopInventory;
+        public Item[] _firstShopInventory;
+        public Item[] _secondShopInventory;
+        public Item[] _thirdShopInventory;
+
+        int encounter;
+        int mazeLocation = 1;
+        int staircasefloor = 0;
 
         /// <summary>
         /// Gets the Input of the player
@@ -111,16 +123,8 @@ namespace HelloDungeons
         }
 
         /// <summary>
-        /// Intializes the game at the start of the game
+        /// Intializes every single Item in the game, as well as the shop inventories
         /// </summary>
-        private void Start()
-        {
-            _gameOver = false;
-            InitializeItems();
-            InitializeEnemies();
-
-        }
-
         public void InitializeItems()
         {
             //Knight Base Items
@@ -135,15 +139,12 @@ namespace HelloDungeons
             Item _stick = new Item { Name = "Wooden Stick", StatBoost = 10, Type = ItemType.WAND, Cost = 10, Description = "A Wooden Stick. A Wizard could still find a use for this." };
             Item _basicRobes = new Item { Name = "Wizard's Robe", StatBoost = 10, Type = ItemType.ARMOR, Cost = 25, Description = "Casual Wizard Robes for a casual wizard." };
 
-            //Tank Base Items
+            //Tank Base Items(Tank gets the basic sword)
             Item _ironChestplate = new Item { Name = "Iron Chestplate", StatBoost = 20, Type = ItemType.ARMOR, Cost = 100, Description = "Knight's Armor that has been reinforced with more iron, very heavy." };
 
-            //Shop Items
-            Item _smallpotion = new Item { Name = "Small Potion", StatBoost = 30, Type = ItemType.POTION, Cost = 30, Description = "A small potion to heal small wounds. Better to not ask how." };
-            Item _potion = new Item { Name = "Potion", StatBoost = 60, Type = ItemType.POTION, Cost = 50, Description = "A normal potion that can heal wounds." };
-            Item _largepotion = new Item { Name = "Large Potion", StatBoost = 100, Type = ItemType.POTION, Cost = 75, Description = "A really big potion that can heal all wounds, except the stomachache you'll get if you chug it." };
-
-            //First shop
+            //All Shop Items
+            
+            //First shop Items
             Item _steelSword = new Item { Name = "Steel Sword", StatBoost = 20, Type = ItemType.SWORD, Cost = 50, Description = "A Sword made from steel." };
             Item _basicShield = new Item { Name = "Wooden Shield", StatBoost = 5, Type = ItemType.SHIELD, Cost = 25, Description = "A Wooden shield. It's not effective" };
             Item _tightenedBow = new Item { Name = "Tightly-Strung Bow", StatBoost = 30, Type = ItemType.BOW, Cost = 50, Description = "A bow that has been tighten for more damage and range. Flies perfectly straight" };
@@ -151,38 +152,74 @@ namespace HelloDungeons
             Item _adventurerGear = new Item { Name = "Adventurer's Gear", StatBoost = 15, Type = ItemType.ARMOR, Cost = 50, Description = "A standard adventurer set that has all your basic needs.." };
             Item _silkGloves = new Item { Name = "Silk Gloves", StatBoost = 5, Type = ItemType.GLOVES, Cost = 20, Description = "Very Comfy Gloves." };
             Item _heavyDutyBoots = new Item { Name = "Heavy-Duty Boots", StatBoost = 10, Type = ItemType.BOOTS, Cost = 20, Description = "Boots designed for anything and everything." };
+            Item _smallpotion = new Item { Name = "Small Potion", StatBoost = 30, Type = ItemType.POTION, Cost = 30, Description = "A small potion to heal small wounds. Better to not ask how." };
 
-            //Second Shop
+            //Second Shop Items
             Item _magicSword = new Item { Name = "Magic Sword", StatBoost = 35, Type = ItemType.SWORD, Cost = 100, Description = "A Sword that has been imbued with magic." };
             Item _reinforcedShield = new Item { Name = "Reinforced Shield", StatBoost = 15, Type = ItemType.SHIELD, Cost = 50, Description = "A wood shield that is reinforced with many materials." };
             Item _doubleBow = new Item { Name = "Double-Shot Bow", StatBoost = 40, Type = ItemType.BOW, Cost = 100, Description = "A bow that was made specifically to fire two arrows. Be lucky you have infinite arrows" };
             Item _staff = new Item { Name = "Gold Staff", StatBoost = 35, Type = ItemType.WAND, Cost = 100, Description = "A magic staff made from gold." };
             Item _dungeonGear = new Item { Name = "Dungeoneer's Gear", StatBoost = 20, Type = ItemType.ARMOR, Cost = 75, Description = "Gear made to challenge dungeons." };
             Item _italianGloves = new Item { Name = "Italian Gloves", StatBoost = 10, Type = ItemType.GLOVES, Cost = 50, Description = "These strange gloves make you feel like a plumber." };
+            Item _potion = new Item { Name = "Potion", StatBoost = 60, Type = ItemType.POTION, Cost = 50, Description = "A normal potion that can heal wounds." };
 
-            //FinalShop
+            //FinalShop Items
             Item _heroSword = new Item { Name = "Hero's Sword", StatBoost = 50, Type = ItemType.SWORD, Cost = 250, Description = "A Sword for a true hero." };
             Item _hylianShield = new Item { Name = "Hylian Shield", StatBoost = 25, Type = ItemType.SHIELD, Cost = 175, Description = "A very effective shield, somehow familiar." };
+            Item _heroBow = new Item { Name = "Hero's Bow", StatBoost = 60, Type = ItemType.BOOTS, Cost = 250, Description = "A legendary bow for a legendary hero!" };
             Item _kamekwand = new Item { Name = "Kamek's Wand", StatBoost = 50, Type = ItemType.WAND, Cost = 250, Description = "A wand stol... I mean borrowed from Bowser's top general. Don't tell Kamek." };
             Item _heroGear = new Item { Name = "Hero's Gear", StatBoost = 25, Type = ItemType.ARMOR, Cost = 100, Description = "An outfit made for a true hero." };
-            Item _ironboots = new Item { Name = "Iron Boots", StatBoost = 15, Type = ItemType.BOOTS, Cost = 50, Description = "Really sturdy boots. Will sink when wearing them." };
-
-
+            Item _ironBoots = new Item { Name = "Iron Boots", StatBoost = 15, Type = ItemType.BOOTS, Cost = 50, Description = "Really sturdy boots. Will sink when wearing them." };
+            Item _largepotion = new Item { Name = "Large Potion", StatBoost = 100, Type = ItemType.POTION, Cost = 75, Description = "A really big potion that can heal all wounds, except the stomachache you'll get if you chug it." };
 
             //Initalize arrays
-            _knightItems = new Item[] { _basicSword, _knightArmor, _smallpotion };
+            //Player's Starting inventory
+            _knightItems = new Item[] { _basicSword, _knightArmor };
             _archerItems = new Item[] { _basicBow, _hunterTunic };
             _wizardItems = new Item[] { _stick, _basicRobes };
             _tankItems = new Item[] { _basicSword, _basicShield, _ironChestplate };
-            _shopInventory = new Item[] { _basicSword, _steelSword, _basicShield, _reinforcedShield, _basicBow, };
+
+            //Shop Invetories
+            _firstShopInventory = new Item[] { _steelSword, _basicShield, _tightenedBow, _wand, _adventurerGear, _silkGloves, _heavyDutyBoots, _smallpotion};
+            _secondShopInventory = new Item[] { _magicSword, _reinforcedShield, _doubleBow, _staff, _dungeonGear, _italianGloves };
+            _thirdShopInventory = new Item[] { _heroSword, _hylianShield, _heroBow, _kamekwand, _heroGear, _ironBoots };
         }
 
+        /// <summary>
+        /// Intializes every enemy and creates boss and enemy array
+        /// </summary>
         public void InitializeEnemies()
         {
-            Entity windShearer = new Entity("The Wind Shearer", 75, 75, 30, 15, 75);
-            Entity voidOgre = new Entity("Void Ogre", 100, 100, 30, 10, 100);
+           //Bosses
+            Entity _windShearer = new Entity("The Wind Shearer", 75, 75, 30, 15, 75);
+            Entity _voidOgre = new Entity("Void Ogre", 100, 100, 40, 10, 100);
+            Entity _dungeonCore = new Entity("The Dungeon's Core", 200, 200, 75, 50, 1000);
 
-            _enemies = new Entity[] { windShearer, voidOgre };
+            //Random Encounters
+            Entity _windServant = new Entity("Wind Servant", 50, 50, 20, 10, 20);
+            Entity _rockservant = new Entity("Rock Servant", 70, 70, 20, 20, 25);
+            Entity _lizardWizard = new Entity("The Lizard Wizard", 50, 0, 30, 10, 25);
+            Entity _trenchcoatFrogs = new Entity("Frogs in a Trenchcoat", 60, 60, 25, 15, 25);
+            Entity _stoneKnight = new Entity("Stone Knight", 100, 100, 30, 20, 40);
+            Entity _reptileSage = new Entity("Reptilian Sage", 80, 80, 40, 15, 40);
+            Entity _shadyToad = new Entity("Shady Toad", 90, 90, 35, 25, 40);
+            Entity _dungeonProtector = new Entity("Dungeon Protector", 125, 125, 50, 35, 65);
+            Entity _dragonNecromancer = new Entity("Dragon Necromancer", 100, 100, 75, 25, 65);
+            Entity _mysteriousTadpole = new Entity("Mysterious T.A.D.P.O.L.E", 110, 110, 60, 30, 65);
+
+            //Intialize the bosses and enemies arrays
+            _bosses = new Entity[] { _windShearer, _voidOgre, _dungeonCore };
+            _enemies = new Entity[] { _windServant, _rockservant, _lizardWizard, _trenchcoatFrogs, _stoneKnight, _reptileSage, _shadyToad, _dungeonProtector, _dragonNecromancer, _mysteriousTadpole};
+        }
+
+        /// <summary>
+        /// Intializes the game at the start of the game
+        /// </summary>
+        private void Start()
+        {
+            _gameOver = false;
+            InitializeItems();
+            InitializeEnemies();
         }
 
         /// <summary>
@@ -203,7 +240,7 @@ namespace HelloDungeons
         }
 
         /// <summary>
-        /// Calls the appropriate function(s) based on the current scene index
+        /// Calls the appropriate function based on the current scene index
         /// </summary>
         void DisplayCurrentScene()
         {
@@ -223,11 +260,19 @@ namespace HelloDungeons
                     break;
 
                 case Scene.SHOP:
-                    DisplayShopMenu();
+                    DisplayShopMenu(_currentShop);
                     break;
 
                 case Scene.ROOM1:
                     Room1();
+                    break;
+
+                case Scene.ROOM1MAZE:
+                    Room1Maze();
+                    break;
+
+                case Scene.ROOM1BATTLE:
+                    Room1Battle();
                     break;
 
                 case Scene.ROOM2:
@@ -236,6 +281,14 @@ namespace HelloDungeons
 
                 case Scene.ROOM2BATTLE:
                     VoidOgreBattle();
+                    break;
+
+                case Scene.STAIRS:
+                    Staircase();
+                    break;
+
+                case Scene.FINALBOSS:
+                    FinalBoss();
                     break;
 
                 case Scene.RESTARTMENU:
@@ -247,25 +300,35 @@ namespace HelloDungeons
                     break;
             }
         }
+
+        /// <summary>
+        /// The Opening Start Screen
+        /// </summary>
         public void StartingScreen()
         {
+            //Ask the player if they want to start or continue
             int choice = GetInput("Welcome to Aeos Dungeon", "Start New Game", "Load Game");
 
+            //Player chooses to start
             if (choice == 0)
             {
+                //Send them to the Character Creation Screen
                 _currentScene = Scene.CHARACTERSELECTION;
             }
+            //Player Load a file
             else if (choice == 1)
             {
+                //Check if file loads
                 if (_gameOver)
                 {
+                    //File Loads
                     Console.WriteLine("Loading Successful");
                     Console.ReadKey(true);
                     Console.Clear();
-                    _currentScene = Scene.BATTLE;
                 }
                 else
                 {
+                    //File Fails
                     Console.WriteLine("Woops, something messed up");
                     Console.ReadKey(true);
                     Console.Clear();
@@ -273,6 +336,9 @@ namespace HelloDungeons
             }
         }
 
+        /// <summary>
+        /// The Character Creation Screen
+        /// </summary>
         void BeginningScene()
         {
             //Start Screen and Charater Creation
@@ -302,7 +368,7 @@ namespace HelloDungeons
 
                 //Ask player if the are okay with their name
                 int input = GetInput("Are you okay with this name?", "Yes", "No");
-                //IF yes
+                //If yes
                 if (input == 0)
                 {
                     //End Loop
@@ -314,6 +380,7 @@ namespace HelloDungeons
                     //Continue Looping
                 }
             }
+
             //Player chose Aeos as Name
             if (_playerName.ToLower() == "aeos")
             {
@@ -348,31 +415,39 @@ namespace HelloDungeons
                 {
                     //Choose Knight
                     case 0:
+                        //Creates the Player as a Knight
                         _player = new Player(_playerName, 75, 75, 15, 15, 20, _knightItems, "Knight");
+                        //Equips their items
                         _player.TryEquipItem(0);
                         _player.TryEquipItem(1);
-                        _player.TryEquipItem(2);
                         break;
                     //Choose Archer
                     case 1:
+                        //Creates the Player as a Archer
                         _player = new Player(_playerName, 60, 60, 20, 10, 20, _archerItems, "Archer");
+                        //Equips their items
                         _player.TryEquipItem(0);
                         _player.TryEquipItem(1);
                         break;
                     //Choose Wizard
                     case 2:
+                        //Creates the Player as a Wizard
                         _player = new Player(_playerName, 60, 60, 25, 5, 20, _wizardItems, "Wizard");
+                        //Equips their items
                         _player.TryEquipItem(0);
                         _player.TryEquipItem(1);
                         break;
                     //Choose Tank
                     case 3:
+                        //Creates the Player as a Tank
                         _player = new Player(_playerName, 100, 100, 10, 20, 20, _tankItems, "Tank");
+                        //Equips their items
                         _player.TryEquipItem(0);
                         _player.TryEquipItem(1);
                         _player.TryEquipItem(2);
                         break;
                 }
+
                 //Ask player if the are okay with their class
                 input = GetInput("Are you okay with this class?", "Yes", "No");
                 //If yes
@@ -408,20 +483,29 @@ namespace HelloDungeons
         /// <param name="item">The item to be shown</param>
         void DisplayItemStats(Item item)
         {
+            Console.Clear();
             Console.WriteLine(item.Name);
             Console.WriteLine("\n" + item.Description);
             Console.WriteLine("\nItem Type: " + item.Type);
+            //If Item is a Weapon
             if (item.Type == ItemType.SWORD || item.Type == ItemType.BOW || item.Type == ItemType.WAND)
                 Console.WriteLine("Attack: +" + item.StatBoost);
+            //If the item is a Defensive Item
             else if (item.Type == ItemType.SHIELD || item.Type == ItemType.ARMOR || item.Type == ItemType.HELMET || item.Type == ItemType.GLOVES || item.Type == ItemType.BOOTS)
                 Console.WriteLine("Defense: +" + item.StatBoost);
+            //If item is a Potion
             else if (item.Type == ItemType.POTION)
                 Console.WriteLine("Heals " + item.StatBoost + " damage");
             Console.WriteLine();
         }
 
+        /// <summary>
+        /// A function to get the names of the player's items
+        /// </summary>
+        /// <returns>An array containing all of the player's items</returns>
         private string[] GetInventory()
         {
+            //Creates a new array
             string[] itemNames = new string[_player.Items.Length + 1];
 
             //Copies the items name into the new array
@@ -430,7 +514,9 @@ namespace HelloDungeons
                 itemNames[i] = _player.Items[i].Name;
             }
 
+            //Adds a cancel button
             itemNames[itemNames.Length - 1] = "Cancel";
+
             //returns the new array
             return itemNames;
         }
@@ -447,11 +533,11 @@ namespace HelloDungeons
             //If input is within scope
             if (input < GetInventory().Length && input >= 0)
             {   
-                //If item is not a potion/consumable
+                //If item is not a potion
                 if (_player.Items[input].Type != ItemType.POTION)
                 { 
-                    //Ask the player if they would like to Use, Unequip or Discard
-                    int choice = GetInput("What would you like to do with this item?", "Use", "Unequip", "Description");
+                    //Ask the player if they would like to Use, Unequip or read Description
+                    int choice = GetInput("What would you like to do with this item?", "Equip", "Unequip", "Description");
                     //If the choose to equip
                     if (choice == 0)
                     {
@@ -475,33 +561,40 @@ namespace HelloDungeons
                         //Call the unequip function
                         _player.TryUnequip(input);
                     }
+                    //Player chooses to read Description
                     else if (choice == 2)
                     {
+                        //Show the Item Stats
                         Console.Clear();
                         DisplayItemStats(_player.Items[input]);
                     }
                 }
 
-                //If player chooses an Potion/Consumable
+                //If player chooses a Potion
                 else if(_player.Items[input].Type == ItemType.POTION)
                 {
-                    //Either use or discard
+                    //Either use or get description
                     int choice = GetInput("What would you like to do with this item?", "Use", "Description");
+                    //Player chooses use
                     if (choice == 0)
                     {
+                        //Use the potion, then remove it 
                         float amountHealed = _player.HealDamage(_player.Items[input].StatBoost);
                         Console.WriteLine("You healed " + amountHealed + " damage.");
                         _player.UseConsumable(_player.Items[input]);
                     }
+                    //Player chooses to read Description
                     else if (choice == 1)
                     {
+                        //Show Stats
                         Console.Clear();
                         DisplayItemStats(_player.Items[input]);
                     }
                 }
                 
             }
-            //If input is the last option
+
+            //If input is the last option (Cancel)
             else if (input == GetInventory().Length - 1)
             {   
                 //Leave the menu
@@ -509,28 +602,38 @@ namespace HelloDungeons
             }
         }
 
+        /// <summary>
+        /// The main battle function
+        /// </summary>
         public void Battle()
         {
             float damageDealt = 0;
 
+            //Display's both combatants stats
             DisplayStats(_player);
             DisplayStats(_currentEnemy);
 
-
+            //Ask player for what they want to do
             int input = GetInput("A " + _currentEnemy.Name + " stands in front of you. What will you do?", "Attack", "Inventory", "Save");
+            //Player Attacks
             if (input == 0)
             {
+                //Calls attack function
                 damageDealt = _player.Attack(_currentEnemy);
                 Console.WriteLine("You dealt " + damageDealt + " damage to " + _currentEnemy.Name + ".");
             }
+            //Player goes into inventory
             else if (input == 1)
             {
+                //Enter Inventory
                 Console.Clear();
                 DisplayEquipMenu();
                 return;
             }
+            //Player Saves
             else if (input == 2)
             {
+                //Call Save Function
                 Console.Clear();
                 //Save();
                 Console.WriteLine("Saved Game");
@@ -538,16 +641,21 @@ namespace HelloDungeons
                 return;
             }
 
+            //Player takes damage
             damageDealt = _currentEnemy.Attack(_player);
             Console.WriteLine("You took " + damageDealt + " damage.");
             CheckBattleResults();
         }
 
+        /// <summary>
+        /// Checks if battle is over
+        /// </summary>
         void CheckBattleResults()
         {
             //If the player loses
             if (_player.Health <= 0)
             {
+                //Go to restart menu
                 Console.WriteLine("\nYou Died");
                 _currentScene = Scene.RESTARTMENU;
             }
@@ -555,8 +663,9 @@ namespace HelloDungeons
             //If the enemy dies...
             else if (_currentEnemy.Health <= 0)
             {
+                //Give the player gold for winning and brings them to the area the were in
                 Console.WriteLine("\nYou slayed the " + _currentEnemy.Name + "!");
-                _player.getMoney(_currentEnemy);
+                Console.WriteLine("You got " +_player.getMoney(_currentEnemy) + " gold!");
                 CheckLocation(_currentArea);
             }
         }
@@ -567,217 +676,76 @@ namespace HelloDungeons
         void DisplayRestartMenu()
         {
             int input = GetInput("Would you like to play again?", "Yes", "No");
+            //If yes
             if (input == 0)
             {
+                //Reinitialize Enemies and puts to the character creation
                 InitializeEnemies();
                 _currentScene = Scene.CHARACTERSELECTION;
             }
+            //if no
             else if (input == 1)
             {
+                //End Game
                 _gameOver = true;
             }
         }
 
+        /// <summary>
+        /// Checks where the player was before entering combat or a shop.
+        /// </summary>
+        /// <param name="currentArea">The area the player was before entering combat or a shop.</param>
         void CheckLocation(int currentArea)
         {
             switch(currentArea)
             {
+                case 0:
+                    //During the Maze
+                    _currentScene = Scene.ROOM1MAZE;
+                    break;
                 case 1:
+                    //End of Room 1
                     _currentScene = Scene.ROOM2;
                     break;
                 case 2:
+                    //The first shop
                     _currentScene = Scene.ROOM2BATTLE;
                     break;
                 case 3:
-                    _currentScene = Scene.ROOM3;
+                    //The Staircase
+                    _currentScene = Scene.STAIRS;
+                    break;
+                case 4:
+                    //The top of the Maze
+                    _currentScene = Scene.ROOM1BATTLE;
                     break;
             }
         }
+
+        /// <summary>
+        /// The First room, pitch black with a maze-like bridge, and a maze below...
+        /// </summary>
         void Room1()
         {
             Console.WriteLine("Aeos joyfully enters into the dungeon, as you follow, keeping careful notice of potential hazards.");
 
             int input = GetInput("You enter into a pitch black room, and all that can be seen is a dim light from the door on the other side of the room.\n\nWhat will you do?", "Walk Ahead", "Stay Put");
+            //If player goes forward
             if (input == 0)
             {
+                //Player falls into maze
                 Console.Clear();
                 Console.WriteLine("You walk ahead dispite your lack of vision, which proves to be a bad decision as you fall a long way down.\n");
                 Console.WriteLine("Shortly, the lights come on, and you see towering walls above you, acting as the walkway.\n");
                 Console.WriteLine("You then hear Aeos call down to you: 'I found the lights! There should be a way back up somewhere down there,\nI meet up with you when you find it!'");
                 Console.ReadKey(true);
-                int mazeLocation = 1;
-                while (mazeLocation != -1)
-                {
-                    Console.Clear();
-                    switch (mazeLocation)
-                    { 
-                        case 1:
-                            input = GetInput("You look around and see a path both ahead and behind you. Which path will you take", "Forwards", "Backwards");
-                            if (input == 0)
-                            {
-                                mazeLocation = 2;
-                            }
-                            else if (input == 1)
-                            {
-                                mazeLocation = 7;
-                            }
-                            break;
-                        case 2:
-                            input = GetInput("You walk ahead and come across a split path, you can continue forwards or head right.", "Forwards", "Right", "Back");
-                            if (input == 0)
-                            {
-                                mazeLocation = 3;
-                            }
-                            else if (input == 1)
-                            {
-                                Console.WriteLine("You Stumbled across a dead end");
-                                Console.ReadKey(true);
-                            }
-                            else if (input == 2)
-                            {
-                                mazeLocation = 1;
-                            }
-                            break;
-                        case 3:
-                            input = GetInput("You continue forwards and find a intersection. Which way will you proceed", "Foward", "Left", "Right", "Back");
-                            if(input == 0)
-                            {
-                                Console.WriteLine("You Stumbled across a dead end");
-                                Console.ReadKey(true);
-                            }
-                            else if(input == 1)
-                            {
-                                mazeLocation = 4;
-                            }
-                            else if (input == 2)
-                            {
-                                mazeLocation = 6;
-                            }
-                            else if (input == 3)
-                            {
-                                mazeLocation = 2;
-                            }
-                            break;
-                        case 4:
-                            input = GetInput("You head left from the intersection and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back");
-                            if(input == 0)
-                            {
-                                Console.WriteLine("You Stumbled across a dead end");
-                                Console.ReadKey(true);
-                            }
-                            else if(input == 1)
-                            {
-                                mazeLocation = 5;
-                            }
-                            else if(input == 2)
-                            {
-                                mazeLocation = 3;
-                            }
-                            break;
-                        case 5:
-                            input = GetInput("You come across a dead end, but there are some vines that you could climb up.", "Climb", "Go Back");
-                            if(input == 0)
-                            {
-                                mazeLocation = -1;
-                            }
-                            else if(input == 1)
-                            {
-                                mazeLocation = 4;
-                            }
-                            break;
-                        case 6:
-                            input = GetInput("You walk right from the intersection and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back");
-                            if (input == 0)
-                            {
-                                Console.WriteLine("You Stumbled across a dead end");
-                                Console.ReadKey(true);
-                            }
-                            else if (input == 1)
-                            {
-                                Console.WriteLine("You Stumbled across a dead end");
-                                Console.ReadKey(true);
-                            }
-                            else if (input == 2)
-                            {
-                                mazeLocation = 3;
-                            }
-                            break;
-                        case 7:
-                            input = GetInput("You walk backwards to find an intersection. Which way will you proceed?", "Forwards", "Left", "Right", "Back");
-                            if (input == 0)
-                            {
-                                mazeLocation = 8;
-                            }
-                            else if (input == 1)
-                            {
-                                Console.WriteLine("You Stumbled across a dead end");
-                                Console.ReadKey(true);
-                            }
-                            else if (input == 2)
-                            {
-                                mazeLocation = 10;
-                            }
-                            else if (input == 3)
-                            {
-                                mazeLocation = 1;
-                            }
-                            break;
-                        case 8:
-                            input = GetInput("You keep heading forwards and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back");
-                            if (input == 0)
-                            {
-                                Console.WriteLine("You Stumbled across a dead end");
-                                Console.ReadKey(true);
-                            }
-                            else if (input == 1)
-                            {
-                                mazeLocation = 9;
-                            }
-                            else if (input == 2)
-                            {
-                                mazeLocation = 7;
-                            }
-                            break;
-                        case 9:
-                            input = GetInput("You reach a dead end, but there is a ladder that reaches up to the top.", "Climb", "Go Back");
-                            if (input == 0)
-                            {
-                                mazeLocation = -1;
-                            }
-                            else if (input == 1)
-                            {
-                                mazeLocation = 8;
-                            }
-                            break;
-                        case 10:
-                            input = GetInput("You head right from the intersection and and reach a fork in the road. You can keep going forwards, or go left.", "Forwards", "Left", "Back");
-                            if (input == 0)
-                            {
-                                Console.WriteLine("You Stumbled across a dead end");
-                                Console.ReadKey(true);
-                            }
-                            else if (input == 1)
-                            {
-                                Console.WriteLine("You Stumbled across a dead end");
-                                Console.ReadKey(true);
-                            }
-                            else if (input == 2)
-                            {
-                                mazeLocation = 7;
-                            }
-                            break;
-                        default:
-                            Console.WriteLine("Invalid Scene Index");
-                            break;
-                    }
-                }
-                Console.Clear();
-                Console.WriteLine("You climb up to the top and make your way to the door, where Aeos is waiting for you, waving.\n" +
-                    "'What took you so long? I was getting bored.' They joke.\n");
-                Console.ReadKey(true);
+                _currentScene = Scene.ROOM1MAZE;
+                return;
             }
+            //If player waits
             else if (input == 1)
             {
+                //Player walks through the room
                 Console.Clear();
                 Console.WriteLine("You stay still and take small movements around the room, and you feel a drop not to far in.\n" +
                     "You can't tell how far, but falling in would be dangerous.\n");
@@ -789,15 +757,225 @@ namespace HelloDungeons
                 Console.ReadKey(true);
                 Console.WriteLine("You begin to cross a maze-like bridge, admiring the chasm below.\n");
                 Console.ReadKey(true);
+                Console.WriteLine("You are soon halted by a small avian creature, who readies to attack");
+                _currentEnemy = _enemies[0];
+                _currentArea = 4;
+                _currentScene = Scene.BATTLE;
             }
+            
+        }
+        
+        /// <summary>
+        /// The maze the player goes through upon falling in room 1
+        /// </summary>
+        void Room1Maze()
+        {
+            //Sets the encounter to -1
+            encounter = -1;
+            while (mazeLocation != -1)
+            {
+                //If player rolls a 0
+                if (encounter == 0)
+                {
+                    //Encounters a Wind Servant
+                    _currentEnemy = _enemies[0];
+                    _currentArea = 0;
+                    _currentScene = Scene.BATTLE;
+                    InitializeEnemies();
+                    return;
+                }
+
+                //Rolls for encounter
+                encounter = new Random().Next(0, 5);
+                Console.Clear();
+
+                //The maze. You choose between options that will lead you further in, or to a dead end
+                //-1 is the exit
+                switch (mazeLocation)
+                {
+                    case 1:
+                        int input = GetInput("You look around and see a path both ahead and behind you. Which path will you take", "Forwards", "Backwards");
+                        if (input == 0)
+                        {
+                            mazeLocation = 2;
+                        }
+                        else if (input == 1)
+                        {
+                            mazeLocation = 7;
+                        }
+                        break;
+                    case 2:
+                        input = GetInput("You walk ahead and come across a split path, you can continue forwards or head right.", "Forwards", "Right", "Back");
+                        if (input == 0)
+                        {
+                            mazeLocation = 3;
+                        }
+                        else if (input == 1)
+                        {
+                            Console.WriteLine("You Stumbled across a dead end");
+                            Console.ReadKey(true);
+                        }
+                        else if (input == 2)
+                        {
+                            mazeLocation = 1;
+                        }
+                        break;
+                    case 3:
+                        input = GetInput("You continue forwards and find a intersection. Which way will you proceed", "Foward", "Left", "Right", "Back");
+                        if (input == 0)
+                        {
+                            Console.WriteLine("You Stumbled across a dead end");
+                            Console.ReadKey(true);
+                        }
+                        else if (input == 1)
+                        {
+                            mazeLocation = 4;
+                        }
+                        else if (input == 2)
+                        {
+                            mazeLocation = 6;
+                        }
+                        else if (input == 3)
+                        {
+                            mazeLocation = 2;
+                        }
+                        break;
+                    case 4:
+                        input = GetInput("You head left from the intersection and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back");
+                        if (input == 0)
+                        {
+                            Console.WriteLine("You Stumbled across a dead end");
+                            Console.ReadKey(true);
+                        }
+                        else if (input == 1)
+                        {
+                            mazeLocation = 5;
+                        }
+                        else if (input == 2)
+                        {
+                            mazeLocation = 3;
+                        }
+                        break;
+                    case 5:
+                        input = GetInput("You come across a dead end, but there are some vines that you could climb up.", "Climb", "Go Back");
+                        if (input == 0)
+                        {
+                            mazeLocation = -1;
+                        }
+                        else if (input == 1)
+                        {
+                            mazeLocation = 4;
+                        }
+                        break;
+                    case 6:
+                        input = GetInput("You walk right from the intersection and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back");
+                        if (input == 0)
+                        {
+                            Console.WriteLine("You Stumbled across a dead end");
+                            Console.ReadKey(true);
+                        }
+                        else if (input == 1)
+                        {
+                            Console.WriteLine("You Stumbled across a dead end");
+                            Console.ReadKey(true);
+                        }
+                        else if (input == 2)
+                        {
+                            mazeLocation = 3;
+                        }
+                        break;
+                    case 7:
+                        input = GetInput("You walk backwards to find an intersection. Which way will you proceed?", "Forwards", "Left", "Right", "Back");
+                        if (input == 0)
+                        {
+                            mazeLocation = 8;
+                        }
+                        else if (input == 1)
+                        {
+                            Console.WriteLine("You Stumbled across a dead end");
+                            Console.ReadKey(true);
+                        }
+                        else if (input == 2)
+                        {
+                            mazeLocation = 10;
+                        }
+                        else if (input == 3)
+                        {
+                            mazeLocation = 1;
+                        }
+                        break;
+                    case 8:
+                        input = GetInput("You keep heading forwards and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back");
+                        if (input == 0)
+                        {
+                            Console.WriteLine("You Stumbled across a dead end");
+                            Console.ReadKey(true);
+                        }
+                        else if (input == 1)
+                        {
+                            mazeLocation = 9;
+                        }
+                        else if (input == 2)
+                        {
+                            mazeLocation = 7;
+                        }
+                        break;
+                    case 9:
+                        input = GetInput("You reach a dead end, but there is a ladder that reaches up to the top.", "Climb", "Go Back");
+                        if (input == 0)
+                        {
+                            mazeLocation = -1;
+                        }
+                        else if (input == 1)
+                        {
+                            mazeLocation = 8;
+                        }
+                        break;
+                    case 10:
+                        input = GetInput("You head right from the intersection and and reach a fork in the road. You can keep going forwards, or go left.", "Forwards", "Left", "Back");
+                        if (input == 0)
+                        {
+                            Console.WriteLine("You Stumbled across a dead end");
+                            Console.ReadKey(true);
+                        }
+                        else if (input == 1)
+                        {
+                            Console.WriteLine("You Stumbled across a dead end");
+                            Console.ReadKey(true);
+                        }
+                        else if (input == 2)
+                        {
+                            mazeLocation = 7;
+                        }
+                        break;
+                }
+            }
+
+            //Finishes the room
+            Console.Clear();
+            Console.WriteLine("You climb up to the top and make your way to the door, where Aeos is waiting for you, waving.\n" +
+                "'What took you so long? I was getting bored.' They joke.\n");
+            Console.ReadKey(true);
+            _currentScene = Scene.ROOM1BATTLE;
+        }
+
+        /// <summary>
+        /// The battle with the Wind Shearer
+        /// </summary>
+        void Room1Battle()
+        {
             Console.WriteLine("You begin to head towards the next room, but a screech from below you echoes through the room.\n" +
                 "A large avian creature arise from the depths of the pit, It lunges at you with tremendous force.");
             Console.ReadKey(true);
+            //Sets the Area, Enemy, and Battle Scene
             _currentArea = 1;
-            _currentEnemy = _enemies[0];
+            _currentEnemy = _enemies[1];
             _currentScene = Scene.BATTLE;
         }
-        
+
+        /// <summary>
+        /// The Second Room, consisting of a Lever Puzzle
+        /// </summary>
         void Room2()
         {
             Console.WriteLine("The Wind Shearer howls in agony while trying to stay airborne, before finally falling to the depths it emerged from.\n" +
@@ -913,6 +1091,7 @@ namespace HelloDungeons
                         lever5 = !lever5;
                         break;
                 }
+                //Completed the puzzle
                 if (!lever1 && lever2 && lever3 && !lever4 && lever5)
                 {
                     Console.Clear();
@@ -921,43 +1100,262 @@ namespace HelloDungeons
                         "'You did it!' They cheer.");
                     Console.ReadKey(true);
                     Console.Clear();
+
+                    //Saves Location
+                    _currentArea = 2;
+
+                    //Asks player if they want to enter the shop
                     input = GetInput("You go through the doorway and reach the other side.\n" +
                         "Where another strange door lies, but unlike the one you entered prior this door seems simple and normal.\n\nEnter?", "Yes", "No");
+                    //If yes
                     if (input == 0)
                     {
-                        _currentArea = 2;
-                        _shop = new Shop(_shopInventory);
+                        //Load shop
+                        _currentShop = _firstShopInventory;
+                        _shop = new Shop(_firstShopInventory);
                         _currentScene = Scene.SHOP;
                     }
+                    //If no
                     else if(input == 1)
                     {
+                        //Continue
                         Console.WriteLine("You decide to keep going");
+                        Console.ReadKey(true);
+                        Console.Clear();
                     }
                     break;
                 }
             }
         }
 
+        /// <summary>
+        /// The Void Ogre Battle
+        /// </summary>
         private void VoidOgreBattle()
         {
+            //Checks if player cleared puzzle
+            //The player did
             if (_currentArea == 2)
             {
                 Console.WriteLine("You make your way further in the dungeon. As you go along you hear loud banging and crashes in the background.");
                 Console.ReadKey(true);
                 Console.WriteLine("\nBut there getting closer...");
+                Console.ReadKey(true);
             }
+            //The player failed
             else
             {
                 Console.WriteLine("The shaking intensifies tenfold, and the doorway explodes into rubble.");
                 Console.ReadKey(true);
             }
-            Console.WriteLine("\n\nYou are soon met with a terrifying sight. A massive beast ramages around the room and distorts the surrounding reality.");
+            Console.WriteLine("\nYou are soon met with a terrifying sight. A massive beast ramages around the room and distorts the surrounding reality.");
             Console.ReadKey(true);
             Console.Clear();
-            Console.WriteLine("You're in for a tough fight");
+            Console.WriteLine("You are in for a tough battle!");
             Console.ReadKey(true);
 
-            _currentEnemy = _enemies[1];
+            //Enter Boss Fight
+            _currentEnemy = _enemies[2];
+            _currentScene = Scene.BATTLE;
+        }
+
+        /// <summary>
+        /// Room 3, a long decending spiral staircase
+        /// </summary>
+        void Room3()
+        {
+            if (staircasefloor < 31)
+            {
+                Console.WriteLine("The room spasm in a distorted fashion, forcing you to dodge rouge chunks.\n");
+            Console.WriteLine("Eventually the Void Ogre fades, and the room anchors itself back to reality");
+            Console.Clear();
+
+            Console.WriteLine("You and your companion enter in to the next room.\n" +
+                "A deep, strange room lies before you. A spiral staircase leads seemingly all the way down, and several foes lie in wait.");
+                _currentScene = Scene.STAIRS;
+            }
+            else
+            {
+                Console.WriteLine("You've finally reached the bottom of the staircase. You breathe out a sigh of relief\n" +
+                "You look forwards at one final door. It's large frame seems to not fit into the rooms geography\n\n");
+                int input = GetInput("WARNING: This is the final boss! Make sure to prepare yourself if you haven't!","Continue", "Fight Enemies", "Shop", "Save", "Quit");
+                switch (input)
+                {
+                    case 0:
+                    case 1:
+                        int encounter;
+                        staircasefloor++;
+                        encounter = new Random().Next(7, 9);
+                        if (encounter != 0)
+                        {
+                            _currentEnemy = _enemies[encounter];
+                            _currentScene = Scene.BATTLE;
+                            InitializeEnemies();
+                            return;
+                        }
+                        break;
+                    case 2:
+                        //Load shop
+                        _shop = new Shop(_thirdShopInventory);
+                        _currentShop = _thirdShopInventory;
+                        _currentScene = Scene.SHOP;
+                        break;
+                    case 3:
+                        break;
+                    case 4:
+                        _gameOver = true;
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The Long Decending Spiral Staircase
+        /// </summary>
+        void Staircase()
+        {
+            //Sets area for encounters
+            _currentArea = 3;
+            //The first ten floors of stairs
+            while (staircasefloor < 10)
+            {
+                int input = GetInput("The Staircase shows no in in sight", "Continue Further", "Shop", "Save", "Quit");
+                switch (input)
+                {
+                    //Player goes further down
+                    case 0:
+                        //Increments the floor
+                        staircasefloor++;
+                        //Rolls for encounter
+                        encounter = new Random().Next(0, 3);
+                        //Determines encounter
+                        if (encounter != 0)
+                        {
+                            _currentEnemy = _enemies[encounter];
+                            _currentScene = Scene.BATTLE;
+                            InitializeEnemies();
+                            return;
+                        }
+                        break;
+                    //Player loads shop
+                    case 1:
+                        //Load shop
+                        _shop = new Shop(_firstShopInventory);
+                        _currentShop = _firstShopInventory;
+                        _currentScene = Scene.SHOP;
+                        break;
+                    //Player Saves
+                    case 2:
+                        break;
+                    //Player Quits the Game
+                    case 3:
+                        _gameOver = true;
+                        break;
+                }
+
+                while (staircasefloor >= 10 && staircasefloor < 20)
+                {
+                    input = GetInput("You've traveled a long way, but there are still more stairs...", "Continue Further", "Shop", "Save", "Quit");
+                    if(staircasefloor == 10)
+                    {
+                        Console.WriteLine("New items have been added to the Shop!");
+                    }
+                    switch (input)
+                    {
+                        //Player goes further down
+                        case 0:
+                            //Increments the floor
+                            staircasefloor++;
+                            //Rolls for encounter
+                            encounter = new Random().Next(0,3);
+                            //Determines encounter
+                            if (encounter != 0)
+                            {
+                                _currentEnemy = _enemies[encounter + 3];
+                                _currentScene = Scene.BATTLE;
+                                InitializeEnemies();
+                                return;
+                            }
+                            break;
+                        //Player loads shop
+                        case 1:
+                            //Load shop
+                            _shop = new Shop(_secondShopInventory);
+                            _currentShop = _secondShopInventory;
+                            _currentScene = Scene.SHOP;
+                            break;
+                        //Player Saves
+                        case 2:
+                            break;
+                        //Player Quits the Game
+                        case 3:
+                            _gameOver = true;
+                            break;
+                    }
+                }
+
+                while (staircasefloor >= 20 && staircasefloor <= 25)
+                {
+                    input = GetInput("You've traveled a long way, but there are still more stairs...", "Continue Further", "Shop", "Save", "Quit");
+                    if (staircasefloor == 11)
+                    {
+                        Console.WriteLine("New items have been added to the Shop!");
+                    }
+                    switch (input)
+                    {
+                        //Player goes further down
+                        case 0:
+                            //Increments the floor
+                            staircasefloor++;
+                            //Rolls for encounters
+                            encounter = new Random().Next(0, 3);
+                            //Determines encounter
+                            if (encounter != 0)
+                            {
+                                _currentEnemy = _enemies[encounter + 6];
+                                _currentScene = Scene.BATTLE;
+                                InitializeEnemies();
+                                return;
+                            }
+                            break;
+                        //Player loads shop
+                        case 1:
+                            //Load shop
+                            _shop = new Shop(_thirdShopInventory);
+                            _currentShop = _thirdShopInventory;
+                            _currentScene = Scene.SHOP;
+                            break;
+                        //Player Saves
+                        case 2:
+                            break;
+                        //Player Quits the Game
+                        case 3:
+                            _gameOver = true;
+                            break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// The final boss, The Dungeon Core
+        /// </summary>
+        void FinalBoss()
+        {
+            Console.WriteLine("You enter into the room. A powerful force pushes you back, and a faint ringing can be heard in your ears.\n" +
+                "The ringing becomes unbearable as you are faced with its source:");
+            Console.ReadKey(true);
+            Console.WriteLine("\nA Beating Mechanical Heart\n\n" +
+                "'Thats the Dungeon's Core.' Aeos speaks, seamingly uneffected by its power.\n");
+            Console.WriteLine("'That is what controls everything about this dungeon, from its contraptions to its inhabitants Its the last obsticale on your journey.'" +
+                "\nIf what they're saying is true, you have to defeat this thing to clear the dungeon.");
+            Console.ReadKey();
+            Console.Clear();
+            Console.WriteLine("This is your final challenge!");
+            Console.ReadKey(true);
+
+            //Enter Boss Fight
+            _currentEnemy = _bosses[3];
             _currentScene = Scene.BATTLE;
         }
 
@@ -965,27 +1363,27 @@ namespace HelloDungeons
         /// Gets the items that will be shown in the menu, and adds saving and exiting
         /// </summary>
         /// <returns>The options that will be displayed in the shop menu</returns>
-        private string[] GetShopMenuOptions()
+        private string[] GetShopMenuOptions(Item[] ShopInventory)
         {
             //Creates a new string array two longer that the shopInventory array
-            string[] itemNames = new string[_shopInventory.Length + 2];
+            string[] itemNames = new string[ShopInventory.Length + 2];
 
             //Copies the names of the items
-            for (int i = 0; i < _shopInventory.Length; i++)
+            for (int i = 0; i < ShopInventory.Length; i++)
             {
-                itemNames[i] = _shopInventory[i].Name + ": " + _shopInventory[i].Cost + " Gold";
+                itemNames[i] = ShopInventory[i].Name + ": " + ShopInventory[i].Cost + " Gold";
             }
 
             //Adds Save and Exit and returns the finished array
-            itemNames[_shopInventory.Length] = "Save";
-            itemNames[_shopInventory.Length + 1] = "Exit";
+            itemNames[ShopInventory.Length] = "Save";
+            itemNames[ShopInventory.Length + 1] = "Exit";
             return itemNames;
         }
 
         /// <summary>
         /// The Shop Menu
         /// </summary>
-        private void DisplayShopMenu()
+        private void DisplayShopMenu(Item[] ShopInventory)
         {
             //Displays the players gold
             Console.WriteLine("Your Gold: " + _player.Gold);
@@ -1000,36 +1398,36 @@ namespace HelloDungeons
             }
 
             //Displays the options
-            int input = GetInput("\nWhat would you like to puchase?", GetShopMenuOptions());
+            int input = GetInput("\nWhat would you like to puchase?", GetShopMenuOptions(ShopInventory));
 
             //if player selected an item
-            if (input < _shopInventory.Length && input >= 0)
+            if (input < ShopInventory.Length && input >= 0)
             {
                 //Give player choice to buy or Check
                 int choice = GetInput("\nWhat would you like to do?", "Buy", "Check");
                 //IF player buys
-                if (input == 0)
+                if (choice == 0)
                 {
                     //Check if player can perform transaction
                     if (_shop.Sell(_player, input))
-                        _player.Buy(_shopInventory[input]);
+                        _player.Buy(ShopInventory[input]);
                 }
                 //If player checks
-                else if (input == 1)
+                else if (choice == 1)
                 {
                     //Display Item's Stats
-                    DisplayItemStats(_shopInventory[input]);
+                    DisplayItemStats(ShopInventory[input]);
                 }
             }
 
             //If player selected save
-            else if (input == _shopInventory.Length)
+            else if (input == ShopInventory.Length)
             {
                 Console.WriteLine("Saved.");
             }
 
             //If player selects leave
-            else if (input == _shopInventory.Length + 1)
+            else if (input == ShopInventory.Length + 1)
             {
                 //Tells player goodbye
                 Console.WriteLine("Have a nice day.");
@@ -1047,6 +1445,10 @@ namespace HelloDungeons
             }
             
         }
+
+        /// <summary>
+        /// The Run Function
+        /// </summary>
         public void Run()
         {
             Start();

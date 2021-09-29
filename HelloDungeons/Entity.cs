@@ -95,7 +95,8 @@ namespace HelloDungeons
         /// <returns>How much damage the Entity actually takes</returns>
         public virtual float DamageInflicted(float damageAmount, float Defender)
         {
-            float damageTaken = damageAmount - Defender;
+            int rngDamage = new Random().Next(-5, 5);
+            float damageTaken = (damageAmount + rngDamage) - Defender;
 
             if (damageTaken <= 0)
             {
@@ -114,7 +115,7 @@ namespace HelloDungeons
         public float HealDamage(float healAmount)
         {
             _health += healAmount;
-            if (_health >= _maxHealth)
+            if (_health > _maxHealth)
             {
                 float extraHealth = _health - _maxHealth;
                 healAmount -= extraHealth;
@@ -125,8 +126,10 @@ namespace HelloDungeons
 
         public float getMoney(Entity enemy)
         {
-            _gold += enemy._gold;
-            return enemy._gold;
+            int rngGold = new Random().Next(-10, 10);
+
+            _gold += (enemy._gold + rngGold);
+            return enemy._gold + rngGold;
         }
 
         /// <summary>
