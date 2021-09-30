@@ -50,9 +50,11 @@ namespace HelloDungeons
         public Entity()
         {
             _name = "Default";
+            _maxHealth = 0;
             _health = 0;
             _attackPower = 0;
             _defensePower = 0;
+            _gold = 0;
         }
 
         /// <summary>
@@ -149,9 +151,11 @@ namespace HelloDungeons
         public virtual void Save(StreamWriter writer)
         {
             writer.WriteLine(_name);
+            writer.WriteLine(_maxHealth);
             writer.WriteLine(_health);
             writer.WriteLine(_attackPower);
             writer.WriteLine(_defensePower);
+            writer.WriteLine(_gold);
         }
 
         /// <summary>
@@ -162,6 +166,9 @@ namespace HelloDungeons
         {
             _name = reader.ReadLine();
 
+            if (!float.TryParse(reader.ReadLine(), out _maxHealth))
+                return false;
+
             if (!float.TryParse(reader.ReadLine(), out _health))
                 return false;
 
@@ -169,6 +176,9 @@ namespace HelloDungeons
                 return false;
 
             if (!float.TryParse(reader.ReadLine(), out _defensePower))
+                return false;
+
+            if (!float.TryParse(reader.ReadLine(), out _gold))
                 return false;
 
             return true;

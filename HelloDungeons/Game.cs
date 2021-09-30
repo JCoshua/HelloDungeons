@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 namespace HelloDungeons
 {
@@ -16,6 +17,7 @@ namespace HelloDungeons
         ROOM3,
         STAIRS,
         FINALBOSS,
+        ENDING,
         BATTLE,
         SHOP,
         RESTARTMENU
@@ -52,6 +54,8 @@ namespace HelloDungeons
         private Entity[] _enemies;
         private Entity[] _bosses;
         private string _playerName;
+        bool _finalBossPhaseTwo = false;
+        bool _finalBattle = false;
 
         private Scene _currentScene = 0;
         private int _currentArea;
@@ -67,9 +71,9 @@ namespace HelloDungeons
         public Item[] _secondShopInventory;
         public Item[] _thirdShopInventory;
 
-        int encounter;
-        int mazeLocation = 1;
-        int staircasefloor = 0;
+        private int _encounter;
+        private int _mazeLocation = 1;
+        private int _staircaseFloor = 0;
 
         /// <summary>
         /// Gets the Input of the player
@@ -79,7 +83,7 @@ namespace HelloDungeons
         /// <returns>The selected choice</returns>
         int GetInput(string description, params string[] options)
         {
-            string input = "";
+            
             int inputReceived = -1;
 
             while (inputReceived == -1)
@@ -93,7 +97,7 @@ namespace HelloDungeons
                 Console.Write("> ");
 
                 //Get input from player
-                input = Console.ReadLine();
+                string input = Console.ReadLine();
 
                 //If the player typed an int...
                 if (int.TryParse(input, out inputReceived))
@@ -181,8 +185,8 @@ namespace HelloDungeons
 
             //Shop Invetories
             _firstShopInventory = new Item[] { _steelSword, _basicShield, _tightenedBow, _wand, _adventurerGear, _silkGloves, _heavyDutyBoots, _smallpotion};
-            _secondShopInventory = new Item[] { _magicSword, _reinforcedShield, _doubleBow, _staff, _dungeonGear, _italianGloves };
-            _thirdShopInventory = new Item[] { _heroSword, _hylianShield, _heroBow, _kamekwand, _heroGear, _ironBoots };
+            _secondShopInventory = new Item[] { _magicSword, _reinforcedShield, _doubleBow, _staff, _dungeonGear, _italianGloves, _smallpotion, _potion };
+            _thirdShopInventory = new Item[] { _heroSword, _hylianShield, _heroBow, _kamekwand, _heroGear, _ironBoots, _potion, _largepotion };
         }
 
         /// <summary>
@@ -193,12 +197,13 @@ namespace HelloDungeons
            //Bosses
             Entity _windShearer = new Entity("The Wind Shearer", 75, 75, 30, 15, 75);
             Entity _voidOgre = new Entity("Void Ogre", 100, 100, 40, 10, 100);
-            Entity _dungeonCore = new Entity("The Dungeon's Core", 200, 200, 75, 50, 1000);
+            Entity _dungeonCore = new Entity("The Dungeon's Core", 200, 200, 75, 50, 0);
+            Entity _aeos = new Entity("Aeos", 500, 500, 100, 0, 1000);
 
             //Random Encounters
             Entity _windServant = new Entity("Wind Servant", 50, 50, 20, 10, 20);
             Entity _rockservant = new Entity("Rock Servant", 70, 70, 20, 20, 25);
-            Entity _lizardWizard = new Entity("The Lizard Wizard", 50, 0, 30, 10, 25);
+            Entity _lizardWizard = new Entity("The Lizard Wizard", 50, 50, 30, 10, 25);
             Entity _trenchcoatFrogs = new Entity("Frogs in a Trenchcoat", 60, 60, 25, 15, 25);
             Entity _stoneKnight = new Entity("Stone Knight", 100, 100, 30, 20, 40);
             Entity _reptileSage = new Entity("Reptilian Sage", 80, 80, 40, 15, 40);
@@ -208,7 +213,7 @@ namespace HelloDungeons
             Entity _mysteriousTadpole = new Entity("Mysterious T.A.D.P.O.L.E", 110, 110, 60, 30, 65);
 
             //Intialize the bosses and enemies arrays
-            _bosses = new Entity[] { _windShearer, _voidOgre, _dungeonCore };
+            _bosses = new Entity[] { _windShearer, _voidOgre, _dungeonCore, _aeos };
             _enemies = new Entity[] { _windServant, _rockservant, _lizardWizard, _trenchcoatFrogs, _stoneKnight, _reptileSage, _shadyToad, _dungeonProtector, _dragonNecromancer, _mysteriousTadpole};
         }
 
@@ -218,6 +223,7 @@ namespace HelloDungeons
         private void Start()
         {
             _gameOver = false;
+            _player = new Player();
             InitializeItems();
             InitializeEnemies();
         }
@@ -239,6 +245,22 @@ namespace HelloDungeons
             Console.WriteLine("Farewell... Coward.");
         }
 
+        void LoadCurrentScene(string SceneName)
+        {
+            if (SceneName == "BATTLE")
+                _currentScene = Scene.BATTLE;
+            else if (SceneName == "SHOP")
+                _currentScene = Scene.SHOP;
+            else if (SceneName == "ROOM1MAZE")
+                _currentScene = Scene.ROOM1MAZE;
+            else if (SceneName == "ROOM2")
+                _currentScene = Scene.ROOM2;
+            else if (SceneName == "ROOM3")
+                _currentScene = Scene.ROOM3;
+            else if (SceneName == "STAIRS")
+                _currentScene = Scene.STAIRS;
+        }
+    
         /// <summary>
         /// Calls the appropriate function based on the current scene index
         /// </summary>
@@ -283,6 +305,10 @@ namespace HelloDungeons
                     VoidOgreBattle();
                     break;
 
+                case Scene.ROOM3:
+                    Room3();
+                    break;
+
                 case Scene.STAIRS:
                     Staircase();
                     break;
@@ -291,12 +317,58 @@ namespace HelloDungeons
                     FinalBoss();
                     break;
 
+                case Scene.ENDING:
+                    Ending();
+                    break;
+
                 case Scene.RESTARTMENU:
                     DisplayRestartMenu();
                     break;
 
                 default:
                     Console.WriteLine("Invalid Scene Index");
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Checks where the player was before entering combat or a shop.
+        /// </summary>
+        void CheckLocation()
+        {
+            switch (_currentArea)
+            {
+                case 0:
+                    //During the Maze
+                    _currentScene = Scene.ROOM1MAZE;
+                    break;
+                case 1:
+                    //The top of the Maze
+                    _currentScene = Scene.ROOM1BATTLE;
+                    break;
+                case 2:
+                    //End of Room 1
+                    _currentScene = Scene.ROOM2;
+                    break;
+                case 3:
+                    //The first shop
+                    _currentScene = Scene.ROOM2BATTLE;
+                    break;
+                case 4:
+                    //In room 3
+                    _currentScene = Scene.ROOM3;
+                    break;
+                case 5:
+                    //The Staircase Beginning
+                    _currentScene = Scene.STAIRS;
+                    break;
+                case 6:
+                    //The Final Boss
+                    _currentScene = Scene.FINALBOSS;
+                    break;
+                case 7:
+                    //Ending
+                    _currentScene = Scene.ENDING;
                     break;
             }
         }
@@ -319,7 +391,7 @@ namespace HelloDungeons
             else if (choice == 1)
             {
                 //Check if file loads
-                if (_gameOver)
+                if (Load())
                 {
                     //File Loads
                     Console.WriteLine("Loading Successful");
@@ -416,7 +488,7 @@ namespace HelloDungeons
                     //Choose Knight
                     case 0:
                         //Creates the Player as a Knight
-                        _player = new Player(_playerName, 75, 75, 15, 15, 20, _knightItems, "Knight");
+                        _player = new Player(_playerName, 75, 75, 15, 15, 20, _knightItems);
                         //Equips their items
                         _player.TryEquipItem(0);
                         _player.TryEquipItem(1);
@@ -424,7 +496,7 @@ namespace HelloDungeons
                     //Choose Archer
                     case 1:
                         //Creates the Player as a Archer
-                        _player = new Player(_playerName, 60, 60, 20, 10, 20, _archerItems, "Archer");
+                        _player = new Player(_playerName, 60, 60, 20, 10, 20, _archerItems);
                         //Equips their items
                         _player.TryEquipItem(0);
                         _player.TryEquipItem(1);
@@ -432,7 +504,7 @@ namespace HelloDungeons
                     //Choose Wizard
                     case 2:
                         //Creates the Player as a Wizard
-                        _player = new Player(_playerName, 60, 60, 25, 5, 20, _wizardItems, "Wizard");
+                        _player = new Player(_playerName, 60, 60, 25, 5, 20, _wizardItems);
                         //Equips their items
                         _player.TryEquipItem(0);
                         _player.TryEquipItem(1);
@@ -440,7 +512,7 @@ namespace HelloDungeons
                     //Choose Tank
                     case 3:
                         //Creates the Player as a Tank
-                        _player = new Player(_playerName, 100, 100, 10, 20, 20, _tankItems, "Tank");
+                        _player = new Player(_playerName, 100, 100, 10, 20, 20, _tankItems);
                         //Equips their items
                         _player.TryEquipItem(0);
                         _player.TryEquipItem(1);
@@ -531,7 +603,7 @@ namespace HelloDungeons
 
 
             //If input is within scope
-            if (input < GetInventory().Length && input >= 0)
+            if (input < _player.Items.Length && input >= 0)
             {   
                 //If item is not a potion
                 if (_player.Items[input].Type != ItemType.POTION)
@@ -607,14 +679,14 @@ namespace HelloDungeons
         /// </summary>
         public void Battle()
         {
-            float damageDealt = 0;
+            float damageDealt;
 
             //Display's both combatants stats
             DisplayStats(_player);
             DisplayStats(_currentEnemy);
 
             //Ask player for what they want to do
-            int input = GetInput("A " + _currentEnemy.Name + " stands in front of you. What will you do?", "Attack", "Inventory", "Save");
+            int input = GetInput("A " + _currentEnemy.Name + " stands in front of you. What will you do?", "Attack", "Inventory", "Save", "Quit");
             //Player Attacks
             if (input == 0)
             {
@@ -633,11 +705,21 @@ namespace HelloDungeons
             //Player Saves
             else if (input == 2)
             {
-                //Call Save Function
-                Console.Clear();
-                //Save();
-                Console.WriteLine("Saved Game");
-                Console.Clear();
+                //if in the final battle, disallow saving
+                if (_finalBattle)
+                    Console.WriteLine("You cannot save now.");
+                //Otherwise...
+                else
+                {
+                    //Call Save Function
+                    Console.Clear();
+                    Save();
+                }
+                return;
+            }
+            else if (input == 3)
+            {
+                _gameOver = true;
                 return;
             }
 
@@ -666,7 +748,7 @@ namespace HelloDungeons
                 //Give the player gold for winning and brings them to the area the were in
                 Console.WriteLine("\nYou slayed the " + _currentEnemy.Name + "!");
                 Console.WriteLine("You got " +_player.getMoney(_currentEnemy) + " gold!");
-                CheckLocation(_currentArea);
+                CheckLocation();
             }
         }
 
@@ -688,37 +770,6 @@ namespace HelloDungeons
             {
                 //End Game
                 _gameOver = true;
-            }
-        }
-
-        /// <summary>
-        /// Checks where the player was before entering combat or a shop.
-        /// </summary>
-        /// <param name="currentArea">The area the player was before entering combat or a shop.</param>
-        void CheckLocation(int currentArea)
-        {
-            switch(currentArea)
-            {
-                case 0:
-                    //During the Maze
-                    _currentScene = Scene.ROOM1MAZE;
-                    break;
-                case 1:
-                    //End of Room 1
-                    _currentScene = Scene.ROOM2;
-                    break;
-                case 2:
-                    //The first shop
-                    _currentScene = Scene.ROOM2BATTLE;
-                    break;
-                case 3:
-                    //The Staircase
-                    _currentScene = Scene.STAIRS;
-                    break;
-                case 4:
-                    //The top of the Maze
-                    _currentScene = Scene.ROOM1BATTLE;
-                    break;
             }
         }
 
@@ -759,10 +810,9 @@ namespace HelloDungeons
                 Console.ReadKey(true);
                 Console.WriteLine("You are soon halted by a small avian creature, who readies to attack");
                 _currentEnemy = _enemies[0];
-                _currentArea = 4;
+                _currentArea = 1;
                 _currentScene = Scene.BATTLE;
             }
-            
         }
         
         /// <summary>
@@ -770,105 +820,120 @@ namespace HelloDungeons
         /// </summary>
         void Room1Maze()
         {
-            //Sets the encounter to -1
-            encounter = -1;
-            while (mazeLocation != -1)
+            //Sets the _encounter to -1 and Area to 0
+            _encounter = -1;
+            _currentArea = 0;
+
+            while (_mazeLocation != -1)
             {
+                
                 //If player rolls a 0
-                if (encounter == 0)
+                if (_encounter == 0)
                 {
                     //Encounters a Wind Servant
                     _currentEnemy = _enemies[0];
-                    _currentArea = 0;
                     _currentScene = Scene.BATTLE;
                     InitializeEnemies();
                     return;
                 }
 
-                //Rolls for encounter
-                encounter = new Random().Next(0, 5);
+                //Rolls for _encounter
+                _encounter = new Random().Next(0, 5);
                 Console.Clear();
 
                 //The maze. You choose between options that will lead you further in, or to a dead end
                 //-1 is the exit
-                switch (mazeLocation)
+                switch (_mazeLocation)
                 {
                     case 1:
-                        int input = GetInput("You look around and see a path both ahead and behind you. Which path will you take", "Forwards", "Backwards");
+                        int input = GetInput("You look around and see a path both ahead and behind you. Which path will you take", "Forwards", "Backwards", "Save", "Quit");
                         if (input == 0)
-                        {
-                            mazeLocation = 2;
-                        }
+                            _mazeLocation = 2;
                         else if (input == 1)
+                            _mazeLocation = 7;
+                        else if (input == 2)
+                            Save();
+                        else if (input == 3)
                         {
-                            mazeLocation = 7;
+                            _gameOver = true;
+                            return;
                         }
                         break;
                     case 2:
-                        input = GetInput("You walk ahead and come across a split path, you can continue forwards or head right.", "Forwards", "Right", "Back");
+                        input = GetInput("You walk ahead and come across a split path, you can continue forwards or head right.", "Forwards", "Right", "Back", "Save", "Quit");
                         if (input == 0)
-                        {
-                            mazeLocation = 3;
-                        }
+                            _mazeLocation = 3;
                         else if (input == 1)
                         {
                             Console.WriteLine("You Stumbled across a dead end");
                             Console.ReadKey(true);
                         }
                         else if (input == 2)
+                            _mazeLocation = 1;
+                        else if (input == 3)
+                            Save();
+                        else if (input == 4)
                         {
-                            mazeLocation = 1;
+                            _gameOver = true;
+                            return;
                         }
                         break;
                     case 3:
-                        input = GetInput("You continue forwards and find a intersection. Which way will you proceed", "Foward", "Left", "Right", "Back");
+                        input = GetInput("You continue forwards and find a intersection. Which way will you proceed", "Foward", "Left", "Right", "Back", "Save", "Quit"); 
                         if (input == 0)
                         {
                             Console.WriteLine("You Stumbled across a dead end");
                             Console.ReadKey(true);
                         }
                         else if (input == 1)
-                        {
-                            mazeLocation = 4;
-                        }
+                            _mazeLocation = 4;
                         else if (input == 2)
-                        {
-                            mazeLocation = 6;
-                        }
+                            _mazeLocation = 6;
                         else if (input == 3)
+                            _mazeLocation = 2;
+                        else if (input == 4)
+                            Save();
+                        else if (input == 5)
                         {
-                            mazeLocation = 2;
+                            _gameOver = true;
+                            return;
                         }
                         break;
                     case 4:
-                        input = GetInput("You head left from the intersection and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back");
+                        input = GetInput("You head left from the intersection and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back", "Save", "Quit");
                         if (input == 0)
                         {
                             Console.WriteLine("You Stumbled across a dead end");
                             Console.ReadKey(true);
                         }
                         else if (input == 1)
-                        {
-                            mazeLocation = 5;
-                        }
+                            _mazeLocation = 5;
                         else if (input == 2)
+                            _mazeLocation = 3;
+                        else if (input == 3)
+                            Save();
+                        else if (input == 4)
                         {
-                            mazeLocation = 3;
+                            _gameOver = true;
+                            return;
                         }
                         break;
                     case 5:
-                        input = GetInput("You come across a dead end, but there are some vines that you could climb up.", "Climb", "Go Back");
+                        input = GetInput("You come across a dead end, but there are some vines that you could climb up.", "Climb", "Go Back", "Save", "Quit");
                         if (input == 0)
-                        {
-                            mazeLocation = -1;
-                        }
+                            _mazeLocation = -1;
                         else if (input == 1)
+                            _mazeLocation = 4;
+                        else if (input == 2)
+                            Save();
+                        else if (input == 3)
                         {
-                            mazeLocation = 4;
+                            _gameOver = true;
+                            return;
                         }
                         break;
                     case 6:
-                        input = GetInput("You walk right from the intersection and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back");
+                        input = GetInput("You walk right from the intersection and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back", "Save", "Quit");
                         if (input == 0)
                         {
                             Console.WriteLine("You Stumbled across a dead end");
@@ -880,59 +945,71 @@ namespace HelloDungeons
                             Console.ReadKey(true);
                         }
                         else if (input == 2)
+                            _mazeLocation = 3;
+                        else if (input == 3)
+                            Save();
+                        else if (input == 4)
                         {
-                            mazeLocation = 3;
+                            _gameOver = true;
+                            return;
                         }
                         break;
                     case 7:
-                        input = GetInput("You walk backwards to find an intersection. Which way will you proceed?", "Forwards", "Left", "Right", "Back");
+                        input = GetInput("You walk backwards to find an intersection. Which way will you proceed?", "Forwards", "Left", "Right", "Back","Save", "Quit");
                         if (input == 0)
-                        {
-                            mazeLocation = 8;
-                        }
+                            _mazeLocation = 8;
                         else if (input == 1)
                         {
                             Console.WriteLine("You Stumbled across a dead end");
                             Console.ReadKey(true);
                         }
                         else if (input == 2)
-                        {
-                            mazeLocation = 10;
-                        }
+                            _mazeLocation = 10;
                         else if (input == 3)
+                            _mazeLocation = 1;
+                        else if (input == 4)
+                            Save();
+                        else if (input == 5)
                         {
-                            mazeLocation = 1;
+                            _gameOver = true;
+                            return;
                         }
                         break;
                     case 8:
-                        input = GetInput("You keep heading forwards and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back");
+                        input = GetInput("You keep heading forwards and come across a left or right turn. Which way will you proceed?", "Left", "Right", "Back", "Save", "Quit");
                         if (input == 0)
                         {
                             Console.WriteLine("You Stumbled across a dead end");
                             Console.ReadKey(true);
                         }
                         else if (input == 1)
-                        {
-                            mazeLocation = 9;
-                        }
+                            _mazeLocation = 9;
                         else if (input == 2)
+                            _mazeLocation = 7;
+                        else if (input == 3)
+                            Save();
+                        else if (input == 4)
                         {
-                            mazeLocation = 7;
+                            _gameOver = true;
+                            return;
                         }
                         break;
                     case 9:
-                        input = GetInput("You reach a dead end, but there is a ladder that reaches up to the top.", "Climb", "Go Back");
+                        input = GetInput("You reach a dead end, but there is a ladder that reaches up to the top.", "Climb", "Go Back", "Save", "Quit");
                         if (input == 0)
-                        {
-                            mazeLocation = -1;
-                        }
+                            _mazeLocation = -1;
                         else if (input == 1)
+                            _mazeLocation = 8;
+                        else if (input == 2)
+                            Save();
+                        else if (input == 3)
                         {
-                            mazeLocation = 8;
+                            _gameOver = true;
+                            return;
                         }
                         break;
                     case 10:
-                        input = GetInput("You head right from the intersection and and reach a fork in the road. You can keep going forwards, or go left.", "Forwards", "Left", "Back");
+                        input = GetInput("You head right from the intersection and and reach a fork in the road. You can keep going forwards, or go left.", "Forwards", "Left", "Back", "Save", "Quit");
                         if (input == 0)
                         {
                             Console.WriteLine("You Stumbled across a dead end");
@@ -944,8 +1021,13 @@ namespace HelloDungeons
                             Console.ReadKey(true);
                         }
                         else if (input == 2)
+                            _mazeLocation = 7;
+                        else if (input == 3)
+                            Save();
+                        else if (input == 4)
                         {
-                            mazeLocation = 7;
+                            _gameOver = true;
+                            return;
                         }
                         break;
                 }
@@ -968,9 +1050,26 @@ namespace HelloDungeons
                 "A large avian creature arise from the depths of the pit, It lunges at you with tremendous force.");
             Console.ReadKey(true);
             //Sets the Area, Enemy, and Battle Scene
-            _currentArea = 1;
-            _currentEnemy = _enemies[1];
+            _currentArea = 2;
+            _currentEnemy = _bosses[0];
             _currentScene = Scene.BATTLE;
+        }
+
+        /// <summary>
+        /// A function to display lever postition
+        /// </summary>
+        /// <param name="levers">The Levers</param>
+        void GetLeverPosistion(bool[] levers)
+        {
+            for(int i = 1; i <= 5; i++)
+            {
+                if (levers[i - 1])
+                    //Display it as up
+                    Console.WriteLine("Lever " + i + ": Up");
+                else
+                    //Display it as down
+                    Console.WriteLine("Lever " + i + ": Down");
+            }
         }
 
         /// <summary>
@@ -984,10 +1083,11 @@ namespace HelloDungeons
             Console.Clear();
 
             Console.WriteLine("The two of you emerge into a second room. It is much smaller than the first, and doesn't seem to have an exit.\n" +
-                "All you see before you are 5 switches\n\n" +
-                "Aeos jumps from behind you and exclaims 'Wait, I know this room. This wall here is a locked door, a door that can only be openned by those levers." +
+                "All you see before you are 5 switches\n" +
+                "Aeos jumps from behind you and exclaims 'Wait, I know this room. This wall here is a locked door, " +
+                "\na door that can only be openned by those levers." +
                 "\nYou ask what combination opens the door, and they look embarrased and say: I don't actually know...'\n\n" +
-                "You sigh and look at the levers");
+                "You sigh and look at the levers...");
             Console.ReadKey(true);
             Console.Clear();
 
@@ -1001,6 +1101,7 @@ namespace HelloDungeons
             //Amount of attempts remaining
             for (int i = 0; i <= 5; i++)
             {
+                bool[] levers = new bool[] { lever1, lever2, lever3, lever4, lever5 };
                 Console.Clear();
                 if(i == 2)
                 {
@@ -1024,40 +1125,8 @@ namespace HelloDungeons
                 }
 
                 Console.WriteLine("You see 5 levers before you all in these positions");
-                //Lever 1 Position
-                //If a lever is true
-                if (lever1)
-                    //Display it as up
-                    Console.WriteLine("Lever 1: Up");
-                else
-                    //Display it as down
-                    Console.WriteLine("Lever 1: Down");
-
-                //Lever 2 Position
-                if (lever2)
-                    Console.WriteLine("Lever 2: Up");
-                else
-                    Console.WriteLine("Lever 2: Down");
-
-                //Lever 3 Position
-                if (lever3)
-                    Console.WriteLine("Lever 3: Up");
-                else
-                    Console.WriteLine("Lever 3: Down");
-
-                //Lever 4 Position
-                if (lever4)
-                    Console.WriteLine("Lever 4: Up");
-                else
-                    Console.WriteLine("Lever 4: Down");
-
-                //Lever 2 Position
-                if (lever5)
-                    Console.WriteLine("Lever 5: Up");
-                else
-                    Console.WriteLine("Lever 5: Down");
-
-                int input = GetInput("Choose a lever to pull", "Lever 1", "Lever 2", "Lever 3", "Lever 4", "Lever 5");
+                GetLeverPosistion(levers);
+                int input = GetInput("\nChoose a lever to pull", "Lever 1", "Lever 2", "Lever 3", "Lever 4", "Lever 5");
                 switch (input)
                 {
                     //Lever 1 is swapped
@@ -1101,15 +1170,14 @@ namespace HelloDungeons
                     Console.ReadKey(true);
                     Console.Clear();
 
-                    //Saves Location
-                    _currentArea = 2;
-
                     //Asks player if they want to enter the shop
                     input = GetInput("You go through the doorway and reach the other side.\n" +
                         "Where another strange door lies, but unlike the one you entered prior this door seems simple and normal.\n\nEnter?", "Yes", "No");
                     //If yes
                     if (input == 0)
                     {
+                        //Saves Location
+                        _currentArea = 3;
                         //Load shop
                         _currentShop = _firstShopInventory;
                         _shop = new Shop(_firstShopInventory);
@@ -1119,9 +1187,11 @@ namespace HelloDungeons
                     else if(input == 1)
                     {
                         //Continue
-                        Console.WriteLine("You decide to keep going");
+                        Console.WriteLine("You decide to keep going, but you rest a bit to heal up.");
                         Console.ReadKey(true);
+                        _player.HealDamage(999);
                         Console.Clear();
+                        _currentScene = Scene.ROOM2BATTLE;
                     }
                     break;
                 }
@@ -1135,7 +1205,7 @@ namespace HelloDungeons
         {
             //Checks if player cleared puzzle
             //The player did
-            if (_currentArea == 2)
+            if (_currentArea == 3)
             {
                 Console.WriteLine("You make your way further in the dungeon. As you go along you hear loud banging and crashes in the background.");
                 Console.ReadKey(true);
@@ -1155,7 +1225,8 @@ namespace HelloDungeons
             Console.ReadKey(true);
 
             //Enter Boss Fight
-            _currentEnemy = _enemies[2];
+            _currentArea = 4;
+            _currentEnemy = _bosses[1];
             _currentScene = Scene.BATTLE;
         }
 
@@ -1164,31 +1235,36 @@ namespace HelloDungeons
         /// </summary>
         void Room3()
         {
-            if (staircasefloor < 31)
+            if (_staircaseFloor < 31)
             {
                 Console.WriteLine("The room spasm in a distorted fashion, forcing you to dodge rouge chunks.\n");
             Console.WriteLine("Eventually the Void Ogre fades, and the room anchors itself back to reality");
-            Console.Clear();
+                Console.ReadKey(true);
+                Console.Clear();
 
             Console.WriteLine("You and your companion enter in to the next room.\n" +
                 "A deep, strange room lies before you. A spiral staircase leads seemingly all the way down, and several foes lie in wait.");
+                Console.ReadKey(true);
                 _currentScene = Scene.STAIRS;
             }
             else
             {
+                _currentArea = 4;
                 Console.WriteLine("You've finally reached the bottom of the staircase. You breathe out a sigh of relief\n" +
                 "You look forwards at one final door. It's large frame seems to not fit into the rooms geography\n\n");
                 int input = GetInput("WARNING: This is the final boss! Make sure to prepare yourself if you haven't!","Continue", "Fight Enemies", "Shop", "Save", "Quit");
                 switch (input)
                 {
+
                     case 0:
+                        _currentScene = Scene.FINALBOSS;
+                        break;
                     case 1:
-                        int encounter;
-                        staircasefloor++;
-                        encounter = new Random().Next(7, 9);
-                        if (encounter != 0)
+                        int _encounter;
+                        _encounter = new Random().Next(7, 9);
+                        if (_encounter != 0)
                         {
-                            _currentEnemy = _enemies[encounter];
+                            _currentEnemy = _enemies[_encounter];
                             _currentScene = Scene.BATTLE;
                             InitializeEnemies();
                             return;
@@ -1201,10 +1277,11 @@ namespace HelloDungeons
                         _currentScene = Scene.SHOP;
                         break;
                     case 3:
+                        Save();
                         break;
                     case 4:
                         _gameOver = true;
-                        break;
+                        return;
                 }
             }
         }
@@ -1214,10 +1291,13 @@ namespace HelloDungeons
         /// </summary>
         void Staircase()
         {
+            if (_staircaseFloor == 31)
+                _currentScene = Scene.ROOM3;
+            Console.Clear();
             //Sets area for encounters
-            _currentArea = 3;
+            _currentArea = 5;
             //The first ten floors of stairs
-            while (staircasefloor < 10)
+            while (_staircaseFloor < 10)
             {
                 int input = GetInput("The Staircase shows no in in sight", "Continue Further", "Shop", "Save", "Quit");
                 switch (input)
@@ -1225,114 +1305,113 @@ namespace HelloDungeons
                     //Player goes further down
                     case 0:
                         //Increments the floor
-                        staircasefloor++;
-                        //Rolls for encounter
-                        encounter = new Random().Next(0, 3);
-                        //Determines encounter
-                        if (encounter != 0)
+                        _staircaseFloor++;
+                        //Rolls for _encounter
+                        _encounter = new Random().Next(0, 3);
+                        //Determines _encounter
+                        if (_encounter != 0)
                         {
-                            _currentEnemy = _enemies[encounter];
+                            _currentEnemy = _enemies[_encounter];
                             _currentScene = Scene.BATTLE;
                             InitializeEnemies();
-                            return;
                         }
-                        break;
+                        return;
                     //Player loads shop
                     case 1:
                         //Load shop
                         _shop = new Shop(_firstShopInventory);
                         _currentShop = _firstShopInventory;
                         _currentScene = Scene.SHOP;
-                        break;
+                        return;
                     //Player Saves
                     case 2:
-                        break;
+                        Save();
+                        return;
                     //Player Quits the Game
                     case 3:
                         _gameOver = true;
-                        break;
+                        return;
                 }
-
-                while (staircasefloor >= 10 && staircasefloor < 20)
+            }
+            while (_staircaseFloor >= 10 && _staircaseFloor < 20)
+            {
+                int input = GetInput("You've traveled a long way, but there are still more stairs...", "Continue Further", "Shop", "Save", "Quit");
+                if(_staircaseFloor == 10)
                 {
-                    input = GetInput("You've traveled a long way, but there are still more stairs...", "Continue Further", "Shop", "Save", "Quit");
-                    if(staircasefloor == 10)
-                    {
-                        Console.WriteLine("New items have been added to the Shop!");
-                    }
-                    switch (input)
-                    {
-                        //Player goes further down
-                        case 0:
-                            //Increments the floor
-                            staircasefloor++;
-                            //Rolls for encounter
-                            encounter = new Random().Next(0,3);
-                            //Determines encounter
-                            if (encounter != 0)
-                            {
-                                _currentEnemy = _enemies[encounter + 3];
-                                _currentScene = Scene.BATTLE;
-                                InitializeEnemies();
-                                return;
-                            }
-                            break;
-                        //Player loads shop
-                        case 1:
-                            //Load shop
-                            _shop = new Shop(_secondShopInventory);
-                            _currentShop = _secondShopInventory;
-                            _currentScene = Scene.SHOP;
-                            break;
-                        //Player Saves
-                        case 2:
-                            break;
-                        //Player Quits the Game
-                        case 3:
-                            _gameOver = true;
-                            break;
-                    }
+                    Console.WriteLine("New items have been added to the Shop!");
                 }
-
-                while (staircasefloor >= 20 && staircasefloor <= 25)
+                switch (input)
                 {
-                    input = GetInput("You've traveled a long way, but there are still more stairs...", "Continue Further", "Shop", "Save", "Quit");
-                    if (staircasefloor == 11)
-                    {
-                        Console.WriteLine("New items have been added to the Shop!");
-                    }
-                    switch (input)
-                    {
-                        //Player goes further down
-                        case 0:
-                            //Increments the floor
-                            staircasefloor++;
-                            //Rolls for encounters
-                            encounter = new Random().Next(0, 3);
-                            //Determines encounter
-                            if (encounter != 0)
-                            {
-                                _currentEnemy = _enemies[encounter + 6];
-                                _currentScene = Scene.BATTLE;
-                                InitializeEnemies();
-                                return;
-                            }
-                            break;
-                        //Player loads shop
-                        case 1:
-                            //Load shop
-                            _shop = new Shop(_thirdShopInventory);
-                            _currentShop = _thirdShopInventory;
-                            _currentScene = Scene.SHOP;
-                            break;
-                        //Player Saves
-                        case 2:
-                            break;
-                        //Player Quits the Game
-                        case 3:
-                            _gameOver = true;
-                            break;
-                    }
+                    //Player goes further down
+                    case 0:
+                        //Increments the floor
+                        _staircaseFloor++;
+                        //Rolls for _encounter
+                        _encounter = new Random().Next(0,3);
+                        //Determines _encounter
+                        if (_encounter != 0)
+                        {
+                            _currentEnemy = _enemies[_encounter + 3];
+                            _currentScene = Scene.BATTLE;
+                            InitializeEnemies();
+                        }
+                        return;
+                    //Player loads shop
+                    case 1:
+                        //Load shop
+                        _shop = new Shop(_secondShopInventory);
+                        _currentShop = _secondShopInventory;
+                        _currentScene = Scene.SHOP;
+                        return;
+                    //Player Saves
+                    case 2:
+                        Save();
+                        return;
+                    //Player Quits the Game
+                    case 3:
+                        _gameOver = true;
+                        return;
+                }
+            }
+
+            while (_staircaseFloor >= 20 && _staircaseFloor <= 30)
+            {
+                int input = GetInput("You've traveled a long way, but there are still more stairs...", "Continue Further", "Shop", "Save", "Quit");
+                if (_staircaseFloor == 20)
+                {
+                    Console.WriteLine("New items have been added to the Shop!");
+                }
+                switch (input)
+                {
+                    //Player goes further down
+                    case 0:
+                    //Increments the floor
+                    _staircaseFloor++;
+                        //Rolls for encounters
+                        _encounter = new Random().Next(0, 3);
+                        //Determines _encounter
+                        if (_encounter != 0)
+                        {
+                            _currentEnemy = _enemies[_encounter + 6];
+                            _currentScene = Scene.BATTLE;
+                            InitializeEnemies();
+                        }
+                        return;
+                    //Player loads shop
+                    case 1:
+                        //Load shop
+                        _shop = new Shop(_thirdShopInventory);
+                        _currentShop = _thirdShopInventory;
+                        _currentScene = Scene.SHOP;
+                        return;
+                    //Player Saves
+                    case 2:
+                        Save();
+                        return;
+                    //Player Quits the Game
+                    case 3:
+                        _gameOver = true;
+                        return;
                 }
             }
         }
@@ -1342,21 +1421,71 @@ namespace HelloDungeons
         /// </summary>
         void FinalBoss()
         {
-            Console.WriteLine("You enter into the room. A powerful force pushes you back, and a faint ringing can be heard in your ears.\n" +
-                "The ringing becomes unbearable as you are faced with its source:");
-            Console.ReadKey(true);
-            Console.WriteLine("\nA Beating Mechanical Heart\n\n" +
-                "'Thats the Dungeon's Core.' Aeos speaks, seamingly uneffected by its power.\n");
-            Console.WriteLine("'That is what controls everything about this dungeon, from its contraptions to its inhabitants Its the last obsticale on your journey.'" +
-                "\nIf what they're saying is true, you have to defeat this thing to clear the dungeon.");
-            Console.ReadKey();
-            Console.Clear();
-            Console.WriteLine("This is your final challenge!");
-            Console.ReadKey(true);
+            _finalBattle = true;
+            if (!_finalBossPhaseTwo)
+            {
+                Console.WriteLine("You enter into the room. A powerful force pushes you back, and a faint ringing can be heard in your ears.\n" +
+                    "The ringing becomes unbearable as you are faced with its source:");
+                Console.ReadKey(true);
+                Console.WriteLine("\nA Beating Mechanical Heart");
+                Console.ReadKey(true);
+                Console.WriteLine("'\n\nThats the Dungeon's Core.' Aeos speaks, seamingly uneffected by its power.\n" + 
+                    "'That is what controls everything about this dungeon, from its contraptions to its inhabitants." +
+                    "\nIts the last obsticale on your journey.'" +
+                    "\nIf what they're saying is true, you have to defeat this thing to clear the dungeon.");
+                Console.ReadKey();
+                Console.Clear();
+                Console.WriteLine("This is your final challenge!");
+                Console.ReadKey(true);
 
-            //Enter Boss Fight
-            _currentEnemy = _bosses[3];
-            _currentScene = Scene.BATTLE;
+                //Enter Boss Fight
+                _currentArea = 6;
+                _currentEnemy = _bosses[2];
+                _finalBossPhaseTwo = true;
+                _currentScene = Scene.BATTLE;
+            }
+            else
+            {
+                Console.WriteLine("The Dungeon Core cracks as a loud shriek echoes through the room.\n");
+                Console.ReadKey(true);
+                Console.WriteLine("The room finally goes silent, as the heart shatters, reaveling a small child inside.\n" +
+                    "The child looks just like your companion Aeos." +
+                    "You turn to look at your companion, and they look rather emotionless.\n");
+                Console.ReadKey(true);
+                Console.WriteLine("The room still stays silent but the two Aeos stare down each other, standing stern.\n");
+                Console.WriteLine("You stand in the middle of the confusion wondering what's going on." +
+                    "Your companion finally speaks: 'I finally understand... They are the ruler of this dungeon, they are also Aeos, and older version of me. One that I was meant to replace.'");
+                Console.WriteLine("\nThe other Aeos grows angry and starts to growl.\n" +
+                    "But despite this, Aeos conntinues on. 'But he didn't want to be replaced, so he tried his hardest to keep me out.'" +
+                    "\n'You have to strike him down before they lose more of themself and go on a rampage!");
+                Console.ReadKey(true);
+                _currentEnemy = _bosses[3];
+                _currentArea = 7;
+            }
+
+            
+        }
+
+        /// <summary>
+        /// The End Cutscene
+        /// </summary>
+        void Ending()
+        {
+            Console.WriteLine("The opposing Aeos finally falls to their knees, defeated.");
+            Console.ReadKey(true);
+            Console.WriteLine("\nThe other Aeos walks up to his defeated other. 'Its over.'\n\n");
+            Console.ReadKey(true);
+            Console.WriteLine("'No! I can't lose' your foe screams. 'I don't want to go.'");
+            Console.ReadKey(true);
+            Console.WriteLine("\n'I'm sorry. But we don't last forever. Now, you know what has to happen.'");
+            Console.ReadKey(true);
+            Console.WriteLine("Aeos give his hand to his other, and the other took it, finally disapearing.\n" + 
+                "'Its over, I'm now the new ruler of the dungeon. Thank you, now everything is right again.\n" +
+                "You can move freely through this dungeon, I have no intention of stoping you.");
+            Console.ReadKey(true);
+            Console.Clear();
+            Console.WriteLine("You cleared the dungeon!");
+            _currentScene = Scene.RESTARTMENU;
         }
 
         /// <summary>
@@ -1417,6 +1546,7 @@ namespace HelloDungeons
                 {
                     //Display Item's Stats
                     DisplayItemStats(ShopInventory[input]);
+                    Console.ReadKey(true);
                 }
             }
 
@@ -1441,9 +1571,102 @@ namespace HelloDungeons
                     Console.ReadKey(true);
                 }
                 //Transports them back to current area
-                CheckLocation(_currentArea);
+                CheckLocation();
             }
             
+        }
+
+        public void Save()
+        {
+            //Creates a new stream writer
+            StreamWriter writer = new StreamWriter("SaveData.txt");
+
+            //Saves current enemy Scene
+            writer.WriteLine(_currentScene);
+
+            //Save current last area
+            writer.WriteLine(_currentArea);
+
+            //Saves locations in the maze and staircase
+            writer.WriteLine(_mazeLocation);
+            writer.WriteLine(_staircaseFloor);
+
+            //Saves player and Enemy data
+            _player.Save(writer);
+
+            //if in battle
+            if (_currentScene == Scene.BATTLE)
+            {
+                //Save current enemy
+                _currentEnemy.Save(writer);
+                writer.WriteLine(_finalBattle);
+            }
+            //Closes after finishing
+            writer.Close();
+
+            Console.WriteLine("Saved Game");
+        }
+
+        public bool Load()
+        {
+            bool loadSuccessful = true;
+            //File doesn't exist
+            if (!File.Exists("SaveData.txt"))
+                loadSuccessful = false;
+
+            //Creates new reader
+            StreamReader reader = new StreamReader("SaveData.txt");
+
+            //If the first line can't be converted into an int
+            string _sceneName = reader.ReadLine();
+            LoadCurrentScene(_sceneName);
+
+            //Returns current area
+            if (!int.TryParse(reader.ReadLine(), out _currentArea))
+                return false;
+
+            //Returns Maze Loaction
+            if (!int.TryParse(reader.ReadLine(), out _mazeLocation))
+                return false;
+
+            //Return Staircase Level
+            if (!int.TryParse(reader.ReadLine(), out _staircaseFloor))
+                return false;
+
+            //Loads the player
+            if (!_player.Load(reader))
+                loadSuccessful = false;
+
+            //if in battle
+            if (_currentScene == Scene.BATTLE)
+            {
+                //Load current enemy
+                _currentEnemy = new Entity();
+                _currentEnemy.Load(reader);
+                if (!bool.TryParse(reader.ReadLine(), out _finalBattle))
+                    return false;
+            }
+                
+            //if shopping
+            else if (_currentScene == Scene.SHOP)
+            {
+                if (_currentArea == 2)
+                    _currentShop = _firstShopInventory;
+                else if (_currentArea == 3)
+                    _currentShop = _thirdShopInventory;
+                else if (_currentArea == 4)
+                {
+                    if (_staircaseFloor < 10)
+                        _currentShop = _firstShopInventory;
+                    else if (_staircaseFloor >= 10 && _staircaseFloor < 20)
+                        _currentShop = _secondShopInventory;
+
+                }
+                    
+            }
+
+            reader.Close();
+            return loadSuccessful;
         }
 
         /// <summary>
