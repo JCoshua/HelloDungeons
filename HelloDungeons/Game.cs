@@ -54,8 +54,8 @@ namespace HelloDungeons
         private Entity[] _enemies;
         private Entity[] _bosses;
         private string _playerName;
-        bool _finalBossPhaseTwo = false;
-        bool _finalBattle = false;
+        private bool _finalBossPhaseTwo = false;
+        private bool _finalBattle = false;
 
         private Scene _currentScene = 0;
         private int _currentArea;
@@ -81,7 +81,7 @@ namespace HelloDungeons
         /// <param name="description">The context for the decision being made</param>
         /// <param name="options">The choices</param>
         /// <returns>The selected choice</returns>
-        int GetInput(string description, params string[] options)
+        private int GetInput(string description, params string[] options)
         {
             
             int inputReceived = -1;
@@ -129,7 +129,7 @@ namespace HelloDungeons
         /// <summary>
         /// Intializes every single Item in the game, as well as the shop inventories
         /// </summary>
-        public void InitializeItems()
+        private void InitializeItems()
         {
             //Knight Base Items
             Item _basicSword = new Item { Name = "Promising Sword", StatBoost = 10, Type = ItemType.SWORD, Cost = 10, Description = "A promising Sword that has got you through your travels." };
@@ -192,7 +192,7 @@ namespace HelloDungeons
         /// <summary>
         /// Intializes every enemy and creates boss and enemy array
         /// </summary>
-        public void InitializeEnemies()
+        private void InitializeEnemies()
         {
            //Bosses
             Entity _windShearer = new Entity("The Wind Shearer", 75, 75, 30, 15, 75);
@@ -231,7 +231,7 @@ namespace HelloDungeons
         /// <summary>
         /// This function is called every time the game loops.
         /// </summary>
-        public void Update()
+        private void Update()
         {
             DisplayCurrentScene();
             Console.Clear();
@@ -240,12 +240,12 @@ namespace HelloDungeons
         /// <summary>
         /// This function is called before the applications closes
         /// </summary>
-        public void End()
+        private void End()
         {
             Console.WriteLine("Farewell... Coward.");
         }
 
-        void LoadCurrentScene(string SceneName)
+        private void LoadCurrentScene(string SceneName)
         {
             if (SceneName == "BATTLE")
                 _currentScene = Scene.BATTLE;
@@ -264,7 +264,7 @@ namespace HelloDungeons
         /// <summary>
         /// Calls the appropriate function based on the current scene index
         /// </summary>
-        void DisplayCurrentScene()
+        private void DisplayCurrentScene()
         {
             switch (_currentScene)
             {
@@ -334,7 +334,7 @@ namespace HelloDungeons
         /// <summary>
         /// Checks where the player was before entering combat or a shop.
         /// </summary>
-        void CheckLocation()
+        private void CheckLocation()
         {
             switch (_currentArea)
             {
@@ -376,7 +376,7 @@ namespace HelloDungeons
         /// <summary>
         /// The Opening Start Screen
         /// </summary>
-        public void StartingScreen()
+        private void StartingScreen()
         {
             //Ask the player if they want to start or continue
             int choice = GetInput("Welcome to Aeos Dungeon", "Start New Game", "Load Game");
@@ -411,7 +411,7 @@ namespace HelloDungeons
         /// <summary>
         /// The Character Creation Screen
         /// </summary>
-        void BeginningScene()
+        private void BeginningScene()
         {
             //Start Screen and Charater Creation
             //Name Check Choices
@@ -428,7 +428,7 @@ namespace HelloDungeons
         /// Displays text asking for the players name. Doesn't transition to the next section
         /// until the player decides to keep the name.
         /// </summary>
-        void GetPlayerName()
+        private void GetPlayerName()
         {
             bool validName = false;
             //Loops while player has not confirmed their name
@@ -475,7 +475,7 @@ namespace HelloDungeons
         /// Gets the players choice of character. Updates player stats based on
         /// the character chosen.
         /// </summary>
-        void CharacterSelection()
+        private void CharacterSelection()
         {
             Console.Clear();
             bool validJob = false;
@@ -540,7 +540,7 @@ namespace HelloDungeons
         /// Prints a characters stats to the console
         /// </summary>
         /// <param name="character">The character that will have its stats shown</param>
-        void DisplayStats(Entity character)
+        private void DisplayStats(Entity character)
         {
             Console.WriteLine(character.Name);
             Console.WriteLine("Health: " + character.Health);
@@ -553,7 +553,7 @@ namespace HelloDungeons
         /// Prints an item stats
         /// </summary>
         /// <param name="item">The item to be shown</param>
-        void DisplayItemStats(Item item)
+        private void DisplayItemStats(Item item)
         {
             Console.Clear();
             Console.WriteLine(item.Name);
@@ -596,7 +596,7 @@ namespace HelloDungeons
         /// <summary>
         /// The Item Menu where you can use, unequip, or read the description of an item
         /// </summary>
-        public void DisplayEquipMenu()
+        private void DisplayEquipMenu()
         {
             //Displays Items
             int input = GetInput("Items", GetInventory());
@@ -677,7 +677,7 @@ namespace HelloDungeons
         /// <summary>
         /// The main battle function
         /// </summary>
-        public void Battle()
+        private void Battle()
         {
             float damageDealt;
 
@@ -732,7 +732,7 @@ namespace HelloDungeons
         /// <summary>
         /// Checks if battle is over
         /// </summary>
-        void CheckBattleResults()
+        private void CheckBattleResults()
         {
             //If the player loses
             if (_player.Health <= 0)
@@ -755,7 +755,7 @@ namespace HelloDungeons
         /// <summary>
         /// Displays the menu that allows the player to restart or quit the game
         /// </summary>
-        void DisplayRestartMenu()
+        private void DisplayRestartMenu()
         {
             int input = GetInput("Would you like to play again?", "Yes", "No");
             //If yes
@@ -776,7 +776,7 @@ namespace HelloDungeons
         /// <summary>
         /// The First room, pitch black with a maze-like bridge, and a maze below...
         /// </summary>
-        void Room1()
+       private void Room1()
         {
             Console.WriteLine("Aeos joyfully enters into the dungeon, as you follow, keeping careful notice of potential hazards.");
 
@@ -818,7 +818,7 @@ namespace HelloDungeons
         /// <summary>
         /// The maze the player goes through upon falling in room 1
         /// </summary>
-        void Room1Maze()
+        private void Room1Maze()
         {
             //Sets the _encounter to -1 and Area to 0
             _encounter = -1;
@@ -1044,7 +1044,7 @@ namespace HelloDungeons
         /// <summary>
         /// The battle with the Wind Shearer
         /// </summary>
-        void Room1Battle()
+        private void Room1Battle()
         {
             Console.WriteLine("You begin to head towards the next room, but a screech from below you echoes through the room.\n" +
                 "A large avian creature arise from the depths of the pit, It lunges at you with tremendous force.");
@@ -1059,7 +1059,7 @@ namespace HelloDungeons
         /// A function to display lever postition
         /// </summary>
         /// <param name="levers">The Levers</param>
-        void GetLeverPosistion(bool[] levers)
+        private void GetLeverPosistion(bool[] levers)
         {
             for(int i = 1; i <= 5; i++)
             {
@@ -1075,7 +1075,7 @@ namespace HelloDungeons
         /// <summary>
         /// The Second Room, consisting of a Lever Puzzle
         /// </summary>
-        void Room2()
+        private void Room2()
         {
             Console.WriteLine("The Wind Shearer howls in agony while trying to stay airborne, before finally falling to the depths it emerged from.\n" +
                 "'Wow, that was scary, but you sure are strong.' Aeos remarks.");
@@ -1233,7 +1233,7 @@ namespace HelloDungeons
         /// <summary>
         /// Room 3, a long decending spiral staircase
         /// </summary>
-        void Room3()
+        private void Room3()
         {
             if (_staircaseFloor < 31)
             {
@@ -1289,7 +1289,7 @@ namespace HelloDungeons
         /// <summary>
         /// The Long Decending Spiral Staircase
         /// </summary>
-        void Staircase()
+        private void Staircase()
         {
             if (_staircaseFloor == 31)
                 _currentScene = Scene.ROOM3;
@@ -1419,7 +1419,7 @@ namespace HelloDungeons
         /// <summary>
         /// The final boss, The Dungeon Core
         /// </summary>
-        void FinalBoss()
+        private void FinalBoss()
         {
             _finalBattle = true;
             if (!_finalBossPhaseTwo)
@@ -1469,7 +1469,7 @@ namespace HelloDungeons
         /// <summary>
         /// The End Cutscene
         /// </summary>
-        void Ending()
+        private void Ending()
         {
             Console.WriteLine("The opposing Aeos finally falls to their knees, defeated.");
             Console.ReadKey(true);
@@ -1576,7 +1576,7 @@ namespace HelloDungeons
             
         }
 
-        public void Save()
+        private void Save()
         {
             //Creates a new stream writer
             StreamWriter writer = new StreamWriter("SaveData.txt");
@@ -1607,7 +1607,7 @@ namespace HelloDungeons
             Console.WriteLine("Saved Game");
         }
 
-        public bool Load()
+        private bool Load()
         {
             bool loadSuccessful = true;
             //File doesn't exist
