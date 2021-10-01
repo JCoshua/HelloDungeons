@@ -216,50 +216,6 @@ namespace HelloDungeons
             _bosses = new Entity[] { _windShearer, _voidOgre, _dungeonCore, _aeos };
             _enemies = new Entity[] { _windServant, _rockservant, _lizardWizard, _trenchcoatFrogs, _stoneKnight, _reptileSage, _shadyToad, _dungeonProtector, _dragonNecromancer, _mysteriousTadpole};
         }
-
-        /// <summary>
-        /// Intializes the game at the start of the game
-        /// </summary>
-        private void Start()
-        {
-            _gameOver = false;
-            _player = new Player();
-            InitializeItems();
-            InitializeEnemies();
-        }
-
-        /// <summary>
-        /// This function is called every time the game loops.
-        /// </summary>
-        private void Update()
-        {
-            DisplayCurrentScene();
-            Console.Clear();
-        }
-
-        /// <summary>
-        /// This function is called before the applications closes
-        /// </summary>
-        private void End()
-        {
-            Console.WriteLine("Farewell... Coward.");
-        }
-
-        private void LoadCurrentScene(string SceneName)
-        {
-            if (SceneName == "BATTLE")
-                _currentScene = Scene.BATTLE;
-            else if (SceneName == "SHOP")
-                _currentScene = Scene.SHOP;
-            else if (SceneName == "ROOM1MAZE")
-                _currentScene = Scene.ROOM1MAZE;
-            else if (SceneName == "ROOM2")
-                _currentScene = Scene.ROOM2;
-            else if (SceneName == "ROOM3")
-                _currentScene = Scene.ROOM3;
-            else if (SceneName == "STAIRS")
-                _currentScene = Scene.STAIRS;
-        }
     
         /// <summary>
         /// Calls the appropriate function based on the current scene index
@@ -329,6 +285,26 @@ namespace HelloDungeons
                     Console.WriteLine("Invalid Scene Index");
                     break;
             }
+        }
+
+        /// <summary>
+        /// Loads the current Scene after Loading a game
+        /// </summary>
+        /// <param name="SceneName"></param>
+        private void LoadCurrentScene(string SceneName)
+        {
+            if (SceneName == "BATTLE")
+                _currentScene = Scene.BATTLE;
+            else if (SceneName == "SHOP")
+                _currentScene = Scene.SHOP;
+            else if (SceneName == "ROOM1MAZE")
+                _currentScene = Scene.ROOM1MAZE;
+            else if (SceneName == "ROOM2")
+                _currentScene = Scene.ROOM2;
+            else if (SceneName == "ROOM3")
+                _currentScene = Scene.ROOM3;
+            else if (SceneName == "STAIRS")
+                _currentScene = Scene.STAIRS;
         }
 
         /// <summary>
@@ -536,6 +512,7 @@ namespace HelloDungeons
             }
         }
 
+
         /// <summary>
         /// Prints a characters stats to the console
         /// </summary>
@@ -550,50 +527,6 @@ namespace HelloDungeons
         }
 
         /// <summary>
-        /// Prints an item stats
-        /// </summary>
-        /// <param name="item">The item to be shown</param>
-        private void DisplayItemStats(Item item)
-        {
-            Console.Clear();
-            Console.WriteLine(item.Name);
-            Console.WriteLine("\n" + item.Description);
-            Console.WriteLine("\nItem Type: " + item.Type);
-            //If Item is a Weapon
-            if (item.Type == ItemType.SWORD || item.Type == ItemType.BOW || item.Type == ItemType.WAND)
-                Console.WriteLine("Attack: +" + item.StatBoost);
-            //If the item is a Defensive Item
-            else if (item.Type == ItemType.SHIELD || item.Type == ItemType.ARMOR || item.Type == ItemType.HELMET || item.Type == ItemType.GLOVES || item.Type == ItemType.BOOTS)
-                Console.WriteLine("Defense: +" + item.StatBoost);
-            //If item is a Potion
-            else if (item.Type == ItemType.POTION)
-                Console.WriteLine("Heals " + item.StatBoost + " damage");
-            Console.WriteLine();
-        }
-
-        /// <summary>
-        /// A function to get the names of the player's items
-        /// </summary>
-        /// <returns>An array containing all of the player's items</returns>
-        private string[] GetInventory()
-        {
-            //Creates a new array
-            string[] itemNames = new string[_player.Items.Length + 1];
-
-            //Copies the items name into the new array
-            for (int i = 0; i < _player.Items.Length; i++)
-            {
-                itemNames[i] = _player.Items[i].Name;
-            }
-
-            //Adds a cancel button
-            itemNames[itemNames.Length - 1] = "Cancel";
-
-            //returns the new array
-            return itemNames;
-        }
-
-        /// <summary>
         /// The Item Menu where you can use, unequip, or read the description of an item
         /// </summary>
         private void DisplayEquipMenu()
@@ -604,10 +537,10 @@ namespace HelloDungeons
 
             //If input is within scope
             if (input < _player.Items.Length && input >= 0)
-            {   
+            {
                 //If item is not a potion
                 if (_player.Items[input].Type != ItemType.POTION)
-                { 
+                {
                     //Ask the player if they would like to Use, Unequip or read Description
                     int choice = GetInput("What would you like to do with this item?", "Equip", "Unequip", "Description");
                     //If the choose to equip
@@ -643,7 +576,7 @@ namespace HelloDungeons
                 }
 
                 //If player chooses a Potion
-                else if(_player.Items[input].Type == ItemType.POTION)
+                else if (_player.Items[input].Type == ItemType.POTION)
                 {
                     //Either use or get description
                     int choice = GetInput("What would you like to do with this item?", "Use", "Description");
@@ -663,15 +596,59 @@ namespace HelloDungeons
                         DisplayItemStats(_player.Items[input]);
                     }
                 }
-                
+
             }
 
             //If input is the last option (Cancel)
             else if (input == GetInventory().Length - 1)
-            {   
+            {
                 //Leave the menu
                 return;
             }
+        }
+
+        /// <summary>
+        /// A function to get the names of the player's items
+        /// </summary>
+        /// <returns>An array containing all of the player's items</returns>
+        private string[] GetInventory()
+        {
+            //Creates a new array
+            string[] itemNames = new string[_player.Items.Length + 1];
+
+            //Copies the items name into the new array
+            for (int i = 0; i < _player.Items.Length; i++)
+            {
+                itemNames[i] = _player.Items[i].Name;
+            }
+
+            //Adds a cancel button
+            itemNames[itemNames.Length - 1] = "Cancel";
+
+            //returns the new array
+            return itemNames;
+        }
+
+        /// <summary>
+        /// Prints an item stats
+        /// </summary>
+        /// <param name="item">The item to be shown</param>
+        private void DisplayItemStats(Item item)
+        {
+            Console.Clear();
+            Console.WriteLine(item.Name);
+            Console.WriteLine("\n" + item.Description);
+            Console.WriteLine("\nItem Type: " + item.Type);
+            //If Item is a Weapon
+            if (item.Type == ItemType.SWORD || item.Type == ItemType.BOW || item.Type == ItemType.WAND)
+                Console.WriteLine("Attack: +" + item.StatBoost);
+            //If the item is a Defensive Item
+            else if (item.Type == ItemType.SHIELD || item.Type == ItemType.ARMOR || item.Type == ItemType.HELMET || item.Type == ItemType.GLOVES || item.Type == ItemType.BOOTS)
+                Console.WriteLine("Defense: +" + item.StatBoost);
+            //If item is a Potion
+            else if (item.Type == ItemType.POTION)
+                Console.WriteLine("Heals " + item.StatBoost + " damage");
+            Console.WriteLine();
         }
 
         /// <summary>
@@ -1576,6 +1553,9 @@ namespace HelloDungeons
             
         }
 
+        /// <summary>
+        /// The Save Function
+        /// </summary>
         private void Save()
         {
             //Creates a new stream writer
@@ -1667,6 +1647,34 @@ namespace HelloDungeons
 
             reader.Close();
             return loadSuccessful;
+        }
+
+        /// <summary>
+        /// Intializes the game at the start of the game
+        /// </summary>
+        private void Start()
+        {
+            _gameOver = false;
+            _player = new Player();
+            InitializeItems();
+            InitializeEnemies();
+        }
+
+        /// <summary>
+        /// This function is called every time the game loops.
+        /// </summary>
+        private void Update()
+        {
+            DisplayCurrentScene();
+            Console.Clear();
+        }
+
+        /// <summary>
+        /// This function is called before the applications closes
+        /// </summary>
+        private void End()
+        {
+            Console.WriteLine("Farewell... Coward.");
         }
 
         /// <summary>
