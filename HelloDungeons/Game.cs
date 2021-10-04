@@ -37,15 +37,6 @@ namespace HelloDungeons
         NONE
     }
 
-    public struct Item
-    {
-        public string Name;
-        public float StatBoost;
-        public ItemType Type;
-        public int Cost;
-        public string Description;
-    }
-
     class Game
     {
         private bool _gameOver;
@@ -132,49 +123,49 @@ namespace HelloDungeons
         private void InitializeItems()
         {
             //Knight Base Items
-            Item _basicSword = new Item { Name = "Promising Sword", StatBoost = 10, Type = ItemType.SWORD, Cost = 10, Description = "A promising Sword that has got you through your travels." };
-            Item _knightArmor = new Item { Name = "Knight's Armor", StatBoost = 5, Type = ItemType.ARMOR, Cost = 30, Description = "A standard Knight's Armor." };
+            Item _basicSword = new Item ( "Promising Sword", 10, "A promising Sword that has got you through your travels.", 10, ItemType.SWORD );
+            Item _knightArmor = new Item ( "Knight's Armor", 5, "A standard Knight's Armor.", 30, ItemType.ARMOR );
 
             //Archer Base Items
-            Item _basicBow = new Item { Name = "Promising Bow", StatBoost = 20, Type = ItemType.BOW, Cost = 10, Description = "A promising Bow that has got you through your travels." };
-            Item _hunterTunic = new Item { Name = "Hunter's Tunic", StatBoost = 5, Type = ItemType.ARMOR, Cost = 25, Description = "A tunic that has be tailored for hunting." };
+            Item _basicBow = new Item ("Promising Bow", 20, "A promising Bow that has got you through your travels.", 10, ItemType.BOW );
+            Item _hunterTunic = new Item ("Hunter's Tunic", 5, "A tunic that has be tailored for hunting.", 25, ItemType.ARMOR);
             
             //Wizard Base Items
-            Item _stick = new Item { Name = "Wooden Stick", StatBoost = 10, Type = ItemType.WAND, Cost = 10, Description = "A Wooden Stick. A Wizard could still find a use for this." };
-            Item _basicRobes = new Item { Name = "Wizard's Robe", StatBoost = 10, Type = ItemType.ARMOR, Cost = 25, Description = "Casual Wizard Robes for a casual wizard." };
+            Item _stick = new Item ("Wooden Stick", 10, "A Wooden Stick. A Wizard could still find a use for this.", 10, ItemType.WAND );
+            Item _basicRobes = new Item ("Wizard's Robe", 10, "Casual Wizard Robes for a casual wizard.", 25, ItemType.ARMOR );
 
             //Tank Base Items(Tank gets the basic sword)
-            Item _ironChestplate = new Item { Name = "Iron Chestplate", StatBoost = 20, Type = ItemType.ARMOR, Cost = 100, Description = "Knight's Armor that has been reinforced with more iron, very heavy." };
+            Item _ironChestplate = new Item ("Iron Chestplate", 20, "Knight's Armor that has been reinforced with more iron, very heavy.", 100, ItemType.ARMOR  );
 
             //All Shop Items
             
             //First shop Items
-            Item _steelSword = new Item { Name = "Steel Sword", StatBoost = 20, Type = ItemType.SWORD, Cost = 50, Description = "A Sword made from steel." };
-            Item _basicShield = new Item { Name = "Wooden Shield", StatBoost = 5, Type = ItemType.SHIELD, Cost = 25, Description = "A Wooden shield. It's not effective" };
-            Item _tightenedBow = new Item { Name = "Tightly-Strung Bow", StatBoost = 30, Type = ItemType.BOW, Cost = 50, Description = "A bow that has been tighten for more damage and range. Flies perfectly straight" };
-            Item _wand = new Item { Name = "Bronze Wand", StatBoost = 20, Type = ItemType.WAND, Cost = 50, Description = "A bronze wand." };
-            Item _adventurerGear = new Item { Name = "Adventurer's Gear", StatBoost = 15, Type = ItemType.ARMOR, Cost = 50, Description = "A standard adventurer set that has all your basic needs.." };
-            Item _silkGloves = new Item { Name = "Silk Gloves", StatBoost = 5, Type = ItemType.GLOVES, Cost = 20, Description = "Very Comfy Gloves." };
-            Item _heavyDutyBoots = new Item { Name = "Heavy-Duty Boots", StatBoost = 10, Type = ItemType.BOOTS, Cost = 20, Description = "Boots designed for anything and everything." };
-            Item _smallpotion = new Item { Name = "Small Potion", StatBoost = 30, Type = ItemType.POTION, Cost = 30, Description = "A small potion to heal small wounds. Better to not ask how." };
+            Item _steelSword = new Item ("Steel Sword", 20, "A Sword made from steel.", 50, ItemType.SWORD );
+            Item _basicShield = new Item ("Wooden Shield", 5, "A Wooden shield. It's not effective", 25, ItemType.SHIELD );
+            Item _tightenedBow = new Item ("Tightly-Strung Bow", 30, "A bow that has been tighten for more damage and range. Flies perfectly straight", 50, ItemType.BOW );
+            Item _wand = new Item ("Bronze Wand", 20, "A bronze wand.", 50, ItemType.WAND );
+            Item _adventurerGear = new Item ("Adventurer's Gear", 15, "A standard adventurer set that has all your basic needs...", 50, ItemType.ARMOR);
+            Item _silkGloves = new Item ("Silk Gloves", 5, "Very Comfy Gloves.", 20, ItemType.GLOVES );
+            Item _heavyDutyBoots = new Item ( "Heavy-Duty Boots", 10, "Boots designed for anything and everything.", 20, ItemType.BOOTS );
+            Item _smallpotion = new Item ("Small Potion", 30, "A small potion to heal small wounds. Better to not ask how.", 30, ItemType.POTION );
 
             //Second Shop Items
-            Item _magicSword = new Item { Name = "Magic Sword", StatBoost = 35, Type = ItemType.SWORD, Cost = 100, Description = "A Sword that has been imbued with magic." };
-            Item _reinforcedShield = new Item { Name = "Reinforced Shield", StatBoost = 15, Type = ItemType.SHIELD, Cost = 50, Description = "A wood shield that is reinforced with many materials." };
-            Item _doubleBow = new Item { Name = "Double-Shot Bow", StatBoost = 40, Type = ItemType.BOW, Cost = 100, Description = "A bow that was made specifically to fire two arrows. Be lucky you have infinite arrows" };
-            Item _staff = new Item { Name = "Gold Staff", StatBoost = 35, Type = ItemType.WAND, Cost = 100, Description = "A magic staff made from gold." };
-            Item _dungeonGear = new Item { Name = "Dungeoneer's Gear", StatBoost = 20, Type = ItemType.ARMOR, Cost = 75, Description = "Gear made to challenge dungeons." };
-            Item _italianGloves = new Item { Name = "Italian Gloves", StatBoost = 10, Type = ItemType.GLOVES, Cost = 50, Description = "These strange gloves make you feel like a plumber." };
-            Item _potion = new Item { Name = "Potion", StatBoost = 60, Type = ItemType.POTION, Cost = 50, Description = "A normal potion that can heal wounds." };
+            Item _magicSword = new Item ("Magic Sword", 35, "A Sword that has been imbued with magic.", 100, ItemType.SWORD );
+            Item _reinforcedShield = new Item ("Reinforced Shield", 15, "A wood shield that is reinforced with many materials.", 50, ItemType.SHIELD );
+            Item _doubleBow = new Item ( "Double-Shot Bow", 40, "A bow that was made specifically to fire two arrows. Be lucky you have infinite arrows", 100, ItemType.BOW );
+            Item _staff = new Item ( "Gold Staff", 35, "A magic staff made from gold.", 100, ItemType.WAND );
+            Item _dungeonGear = new Item ("Dungeoneer's Gear", 20, "Gear made to challenge dungeons.", 75, ItemType.ARMOR );
+            Item _italianGloves = new Item ("Italian Gloves", 10, "These strange gloves make you feel like a plumber.", 50, ItemType.GLOVES );
+            Item _potion = new Item ( "Potion", 60, "A normal potion that can heal wounds.", 50, ItemType.POTION );
 
             //FinalShop Items
-            Item _heroSword = new Item { Name = "Hero's Sword", StatBoost = 50, Type = ItemType.SWORD, Cost = 250, Description = "A Sword for a true hero." };
-            Item _hylianShield = new Item { Name = "Hylian Shield", StatBoost = 25, Type = ItemType.SHIELD, Cost = 175, Description = "A very effective shield, somehow familiar." };
-            Item _heroBow = new Item { Name = "Hero's Bow", StatBoost = 60, Type = ItemType.BOOTS, Cost = 250, Description = "A legendary bow for a legendary hero!" };
-            Item _kamekwand = new Item { Name = "Kamek's Wand", StatBoost = 50, Type = ItemType.WAND, Cost = 250, Description = "A wand stol... I mean borrowed from Bowser's top general. Don't tell Kamek." };
-            Item _heroGear = new Item { Name = "Hero's Gear", StatBoost = 25, Type = ItemType.ARMOR, Cost = 100, Description = "An outfit made for a true hero." };
-            Item _ironBoots = new Item { Name = "Iron Boots", StatBoost = 15, Type = ItemType.BOOTS, Cost = 50, Description = "Really sturdy boots. Will sink when wearing them." };
-            Item _largepotion = new Item { Name = "Large Potion", StatBoost = 100, Type = ItemType.POTION, Cost = 75, Description = "A really big potion that can heal all wounds, except the stomachache you'll get if you chug it." };
+            Item _heroSword = new Item ("Hero's Sword", 50, "A Sword for a true hero.", 250, ItemType.SWORD );
+            Item _hylianShield = new Item ("Hylian Shield", 25, "A very effective shield, somehow familiar.", 175, ItemType.SHIELD);
+            Item _heroBow = new Item ( "Hero's Bow", 60, "A legendary bow for a legendary hero!", 250, ItemType.BOOTS );
+            Item _kamekwand = new Item ( "Kamek's Wand", 50, "A wand stol... I mean borrowed from Bowser's top general. Don't tell Kamek.", 250, ItemType.WAND );
+            Item _heroGear = new Item ( "Hero's Gear", 25, "An outfit made for a true hero.", 100, ItemType.ARMOR );
+            Item _ironBoots = new Item ( "Iron Boots", 15, "Really sturdy boots. Will sink when wearing them.", 50, ItemType.BOOTS );
+            Item _largepotion = new Item ( "Large Potion", 100, "A really big potion that can heal all wounds, except the stomachache you'll get if you chug it.", 75, ItemType.POTION );
 
             //Initalize arrays
             //Player's Starting inventory
@@ -1353,7 +1344,7 @@ namespace HelloDungeons
 
             while (_staircaseFloor >= 20 && _staircaseFloor <= 30)
             {
-                int input = GetInput("You've traveled a long way, but there are still more stairs...", "Continue Further", "Shop", "Save", "Quit");
+                int input = GetInput("You've finally see the bottom! But there is still a ways to go...", "Continue Further", "Shop", "Save", "Quit");
                 if (_staircaseFloor == 20)
                 {
                     Console.WriteLine("New items have been added to the Shop!");
@@ -1525,7 +1516,7 @@ namespace HelloDungeons
                     DisplayItemStats(ShopInventory[input]);
                     Console.ReadKey(true);
                 }
-            }
+            } 
 
             //If player selected save
             else if (input == ShopInventory.Length)
@@ -1587,12 +1578,16 @@ namespace HelloDungeons
             Console.WriteLine("Saved Game");
         }
 
+        /// <summary>
+        /// The Load Function
+        /// </summary>
+        /// <returns></returns>
         private bool Load()
         {
             bool loadSuccessful = true;
             //File doesn't exist
             if (!File.Exists("SaveData.txt"))
-                loadSuccessful = false;
+                return false;
 
             //Creates new reader
             StreamReader reader = new StreamReader("SaveData.txt");
@@ -1603,15 +1598,15 @@ namespace HelloDungeons
 
             //Returns current area
             if (!int.TryParse(reader.ReadLine(), out _currentArea))
-                return false;
+                loadSuccessful = false;
 
             //Returns Maze Loaction
             if (!int.TryParse(reader.ReadLine(), out _mazeLocation))
-                return false;
+                loadSuccessful = false;
 
             //Return Staircase Level
             if (!int.TryParse(reader.ReadLine(), out _staircaseFloor))
-                return false;
+                loadSuccessful = false;
 
             //Loads the player
             if (!_player.Load(reader))
@@ -1624,9 +1619,9 @@ namespace HelloDungeons
                 _currentEnemy = new Entity();
                 _currentEnemy.Load(reader);
                 if (!bool.TryParse(reader.ReadLine(), out _finalBattle))
-                    return false;
+                    loadSuccessful = false;
             }
-                
+            
             //if shopping
             else if (_currentScene == Scene.SHOP)
             {
@@ -1644,7 +1639,8 @@ namespace HelloDungeons
                 }
                     
             }
-
+            if (!loadSuccessful)
+            _currentScene = Scene.STARTMENU;
             reader.Close();
             return loadSuccessful;
         }

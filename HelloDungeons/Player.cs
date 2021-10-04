@@ -11,17 +11,27 @@ namespace HelloDungeons
         private Item[] _equipment = new Item[6];
         private Item _currentItem;
 
-
+        /// <summary>
+        /// Base Player constructor
+        /// </summary>
         public Player(string name, float maxHealth, float health, float attackPower, float defensePower, float gold, Item[] items) : base(name, maxHealth, health, attackPower, defensePower, gold)
         {
+            for (int i = 0; i < _equipment.Length; i++)
+                _equipment[i] = new Item();
             _items = items;
         }
 
+        /// <summary>
+        /// The Player's inventory consructor
+        /// </summary>
         public Player(Item[] items) : base()
         {
             _items = items;
         }
 
+        /// <summary>
+        /// The Player's invetory constuctor
+        /// </summary>
         public Player() : base()
         {
             _items = new Item[0];
@@ -36,8 +46,7 @@ namespace HelloDungeons
             {
                 float attackPower = base.AttackPower;
 
-                if (_equipment[0].Type == ItemType.SWORD || _equipment[0].Type == ItemType.BOW || _equipment[0].Type == ItemType.WAND)
-                    attackPower = base.AttackPower + _equipment[0].StatBoost;
+                attackPower = _equipment[0].EquipmentCalculation(attackPower);
 
                 return attackPower;
             }
@@ -53,20 +62,8 @@ namespace HelloDungeons
             {
                 float defensePower = base.DefensePower;
 
-                if (_equipment[1].Type == ItemType.SHIELD)
-                    defensePower += _equipment[1].StatBoost;
-
-                if (_equipment[2].Type == ItemType.ARMOR)
-                    defensePower += _equipment[2].StatBoost;
-
-                if (_equipment[3].Type == ItemType.HELMET)
-                    defensePower += _equipment[3].StatBoost;
-
-                if (_equipment[4].Type == ItemType.GLOVES)
-                    defensePower += _equipment[4].StatBoost;
-
-                if (_equipment[5].Type == ItemType.BOOTS)
-                    defensePower += _equipment[5].StatBoost;
+                for (int i = 1; i < _equipment.Length; i++)
+                    defensePower = _equipment[i].EquipmentCalculation(defensePower);
 
                 return defensePower;
             }
@@ -84,6 +81,9 @@ namespace HelloDungeons
             get { return _currentItem; }
         }
 
+        /// <summary>
+        /// Changes Damage based on weapon type
+        /// </summary>
         public override float DamageInflicted(float damageAmount, float Defender)
         {
             int rngDamage = new Random().Next(-5, 5);
@@ -113,7 +113,10 @@ namespace HelloDungeons
             return damageTaken;
         }
 
-        //Gives the player the item they bought and puts it in their inventory
+        /// <summary>
+        /// Gives the player the item they bought and puts it in their inventory
+        /// </summary>
+        /// <param name="item">Item Bought</param>
         public void Buy(Item item)
         {
             Pay(item);
@@ -133,7 +136,10 @@ namespace HelloDungeons
             _items = TempArray;
         }
 
-        //Gives the player the item they bought and puts it in their inventory
+        /// <summary>
+        /// Uses an item
+        /// </summary>
+        /// <param name="item"></param>
         public void UseConsumable(Item item)
         {
             //Creates a new array to remove the Item
@@ -154,7 +160,7 @@ namespace HelloDungeons
         /// Sets the item given at the current index
         /// </summary>
         /// <param name="index">The index of the item in the array</param>
-        /// <returns>False if outside the bounds of the array</returns>
+        /// <returns>False if outside the bounds of the array or if item is already equipped</returns>
         public bool TryEquipItem(int index)
         {
             //If the index is out of bounds
@@ -216,47 +222,29 @@ namespace HelloDungeons
         {
             if(_items[item].Type == ItemType.SWORD || _items[item].Type == ItemType.BOW || _items[item].Type == ItemType.WAND)
             {
-                _equipment[0] = new Item { Name = null };
+                _equipment[0] = new Item();
             }
             else if (_items[item].Type == ItemType.SHIELD)
             {
-                _equipment[1] = new Item { Name = null };
+                _equipment[1] = new Item();
             }
             else if (_items[item].Type == ItemType.ARMOR)
             {
-                _equipment[2] = new Item { Name = null };
+                _equipment[2] = new Item();
             }
             else if (_items[item].Type == ItemType.HELMET)
             {
-                _equipment[3] = new Item { Name = null };
+                _equipment[3] = new Item();
             }
             else if (_items[item].Type == ItemType.GLOVES)
             {
-                _equipment[4] = new Item { Name = null };
+                _equipment[4] = new Item();
             }
             else if (_items[item].Type == ItemType.BOOTS)
             {
-                _equipment[5] = new Item { Name = null };
+                _equipment[5] = new Item();
             }
             Console.WriteLine("You unequipped " + _items[item].Name);
-        }
-
-        public void ItemBought(Item item)
-        {
-            //Creates a new array to add the Item
-            Item[] TempArray = new Item[_items.Length + 1];
-
-            //Copies the old inventory into the array
-            for (int i = 0; i < _items.Length; i++)
-            {
-                TempArray[i] = _items[i];
-            }
-
-            //Add the bought item
-            TempArray[TempArray.Length - 1] = item;
-
-            //Edits the old values to the new values
-            _items = TempArray;
         }
 
         /// <summary>
@@ -276,30 +264,6 @@ namespace HelloDungeons
 
             //returns the new array
             return itemNames;
-        }
-
-        ItemType LoadItemType(string itemType)
-        {
-            if (itemType == "SWORD")
-                return ItemType.SWORD;
-            else if (itemType == "BOW")
-                return ItemType.BOW;
-            else if (itemType == "WAND")
-                return ItemType.WAND;
-            else if (itemType == "SHIELD")
-                return ItemType.SHIELD;
-            else if (itemType == "ARMOR")
-                return ItemType.ARMOR;
-            else if (itemType == "HELMET")
-                return ItemType.HELMET;
-            else if (itemType == "GLOVES")
-                return ItemType.GLOVES;
-            else if (itemType == "BOOTS")
-                return ItemType.BOOTS;
-            else if (itemType == "POTION")
-                return ItemType.POTION;
-            else
-                return ItemType.NONE;
         }
         public override void Save(StreamWriter writer)
         {
@@ -334,21 +298,20 @@ namespace HelloDungeons
                 return false;
 
             _items = new Item[items];
-            for (int i = 0; i < _items.Length; i++)
+            for (int i = 0; i < items; i++)
             {
-                _items[i].Name = reader.ReadLine();
-                if (!float.TryParse(reader.ReadLine(), out _items[i].StatBoost))
+                _items[i] = new Item();
+                if (_items[i].LoadInventory(reader).Name == "")
                     return false;
-                string ItemType = reader.ReadLine();
-                _items[i].Type = LoadItemType(ItemType);
-                _items[i].Description = reader.ReadLine();
             }
 
-            //Loads equipped itemss
+
             for (int i = 0; i < _equipment.Length; i++)
             {
-                _equipment[i].Name = reader.ReadLine();
+                _equipment[i] = new Item();
+                _equipment[i].LoadEquipment(reader);
             }
+
             for (int i = 0; i < _items.Length; i++)
             {
                 if (_equipment[0].Name == _items[i].Name)

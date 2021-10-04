@@ -11,7 +11,6 @@ namespace HelloDungeons
         /// <summary>
         /// Shop constructor
         /// </summary>
-        /// <param name="items"></param>
         public Shop(Item[] items)
         {
             _shopInventory = items;

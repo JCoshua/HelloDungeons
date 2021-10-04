@@ -108,12 +108,22 @@ namespace HelloDungeons
             return damageTaken;
         }
 
+        /// <summary>
+        /// A function to actually take damage
+        /// </summary>
+        /// <param name="damageTaken">damage taken</param>
+        /// <returns>damage taken</returns>
         public float TakeDamage(float damageTaken)
         {
             _health -= damageTaken;
             return damageTaken;
         }
 
+        /// <summary>
+        /// A function to heal damage
+        /// </summary>
+        /// <param name="healAmount">The health to be healed</param>
+        /// <returns>The health healed</returns>
         public float HealDamage(float healAmount)
         {
             _health += healAmount;
@@ -126,6 +136,11 @@ namespace HelloDungeons
             return healAmount;
         }
 
+        /// <summary>
+        /// Pays the winner of the fight
+        /// </summary>
+        /// <param name="enemy">The defeated enemy</param>
+        /// <returns>money earned</returns>
         public float getMoney(Entity enemy)
         {
             int rngGold = new Random().Next(-10, 10);
